@@ -21,8 +21,7 @@ import kotlinx.serialization.json.Json
 class DiscordClient(internal val token: String) {
     private val httpClientLogger = KotlinLogging.logger("HTTP_LOGGER")
 
-    // The http client used to send request
-    @OptIn(ExperimentalSerializationApi::class)
+    // The http client used to send requests
     internal var httpClient: HttpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(Json {
@@ -41,7 +40,9 @@ class DiscordClient(internal val token: String) {
         }
     }
 
+    // Channel for classic events received from Discord
     val events = Channel<DispatchEvent>()
+    // Channel for interaction events
     val interactions = Channel<Interaction>()
 
     // the web socket session used to receive/send Gateway intents
@@ -51,17 +52,30 @@ class DiscordClient(internal val token: String) {
     internal var discordURL = "https://discord.com/api/v$apiVersion"
 
     //#region HTTP Calls
-
-    //endregion
-
+    /**
+     * Send a message to a specific discord channel
+     *
+     * @param channelId the channel id to send a message
+     * @param init the message builder function
+     * @return the Http response from discord
+     */
     suspend fun sendMessage(channelId: String, init: (Message.() -> Unit)): HttpResponse {
         val message = Message().apply(init)
         return createChannelMessage(channelId, message)
 
     }
+    //endregion
 
     //#region WebSocket
 
+    /**
+     * Log the bot in discord.
+     * After log in, the bot will be able to receive events from discord.
+     *
+     * @param intents the discord intents identification number.
+     * 
+     * @see [DiscordIntents](https://discord.com/developers/docs/events/gateway#gateway-intents)
+     */
     suspend fun login(intents: Int) = wssSession.connect(intents)
 
     //#endregion

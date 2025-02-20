@@ -34,7 +34,13 @@ class DiscordWebSocketSession(
     // Used to avoid infinite loop
     private var needGatewayClose = false
 
-    suspend fun connect(intents: Int) = CoroutineScope(Dispatchers.Default).launch {
+    /**
+     * Connect discord bot to websockets session.
+     * Also init the hearbeat system.
+     *
+     * @param intents
+     */
+    fun connect(intents: Int) = CoroutineScope(Dispatchers.Default).launch {
         wssSession = httpClient.webSocketSession(
             method = HttpMethod.Get,
             host = "gateway.discord.gg",
@@ -58,6 +64,12 @@ class DiscordWebSocketSession(
     }
 
 
+    /**
+     * Used to handle usable events for the API.
+     * Send interaction and classic events to their respective channels
+     *
+     * @param event the dispatch event to send to a channel
+     */
     private suspend fun onReceiveDispatchEvent(event: DispatchEvent) {
         if (event is InteractionCreateEvent) {
             channelInteraction.send(event.interaction)
@@ -69,10 +81,11 @@ class DiscordWebSocketSession(
      * Initialize the  heartbeat for discord
      *
      * @param event the data of the heartbeat system
+     * @param intents
      */
     private suspend fun initHeartBeat(event: HelloEvent, intents: Int) {
         heartBeatInterval = event.heartbeatInterval
-        // Use a random on the first heartbeat to avoid overheat
+        // Use a random on the first heartbeat to avoid overheating
         delay((heartBeatInterval * Random.nextFloat()).toLong())
         wssSession.sendSerialized(HeartbeatEvent(lastSequenceNumber?.toLong() ?: 0))
 
@@ -94,7 +107,6 @@ class DiscordWebSocketSession(
             while (true) {
                 delay(heartBeatInterval.toLong())
                 if (hasReceiveHBACK) {
-                    println("heartbeat")
                     wssSession.sendSerialized(HeartbeatEvent(lastSequenceNumber?.toLong() ?: 0))
                 } else {
                     wssSession.close(CloseReason(CloseReason.Codes.NOT_CONSISTENT, "No HeartBeat ACK received"))
@@ -111,7 +123,6 @@ class DiscordWebSocketSession(
     private suspend fun initiateIdentification(intents: Int) {
         val identify = IdentifyEvent(token, intents)
         val frame = wssSession.converter?.serialize(identify) as Frame.Text
-        wssLogger.debug { "Identify frame: ${frame.readText()}" }
         wssSession.send(frame)
     }
 }
