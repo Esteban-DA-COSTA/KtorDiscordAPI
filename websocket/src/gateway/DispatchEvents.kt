@@ -1,0 +1,14 @@
+package gateway
+
+enum class DispatchEvents {
+    READY,
+    MESSAGE_CREATE,
+    GUILD_CREATE,
+    PRESENCE_UPDATE,
+    MESSAGE_UPDATE,
+    MESSAGE_DELETE,
+    CHANNEL_CREATE,
+    CHANNEL_UPDATE,
+    CHANNEL_DELETE,
+    INTERACTION_CREATE
+}

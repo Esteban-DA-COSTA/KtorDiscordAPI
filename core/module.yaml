@@ -11,6 +11,8 @@ dependencies:
   - io.ktor:ktor-client-content-negotiation:3.1.0: exported
   - io.ktor:ktor-serialization-kotlinx-json:3.1.0: exported
   - $kotlin.serialization.json : exported
+  - io.github.oshai:kotlin-logging-jvm:5.1.0: exported
+  - ch.qos.logback:logback-classic:1.5.3: exported
 
 settings:
   # Enable Kotlin serialization

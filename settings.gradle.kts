@@ -12,4 +12,4 @@ pluginManagement {
 plugins {
   id("org.jetbrains.amper.settings.plugin").version("0.5.0")
 }
-include(":app", ":core", ":components")
+include(":app", ":core", ":components", ":websocket")

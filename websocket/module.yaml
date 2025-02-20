@@ -1,0 +1,11 @@
+product:
+  type: lib
+  platforms:
+    - jvm
+dependencies:
+  - ../components
+  - io.github.oshai:kotlin-logging-jvm:5.1.0: exported
+  - ch.qos.logback:logback-classic:1.5.3: exported
+settings:
+  kotlin:
+    serialization: json

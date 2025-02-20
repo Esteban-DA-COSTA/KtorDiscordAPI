@@ -2,8 +2,6 @@ package components.interactions
 
 import components.*
 import components.enums.ApplicationCommandOptionTypes
-import components.enums.InteractionContextTypes
-import components.enums.InteractionTypes
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
