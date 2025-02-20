@@ -5,7 +5,7 @@ product:
 
 dependencies:
   - ../components: exported
-  - ../websocket
+  - ../websocket: exported
   - io.ktor:ktor-client-core-jvm:3.1.0: exported
   - io.ktor:ktor-client-cio-jvm:3.1.0: exported
   - io.ktor:ktor-client-websockets-jvm:3.1.0: exported
