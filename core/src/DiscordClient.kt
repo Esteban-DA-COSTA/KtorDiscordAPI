@@ -1,4 +1,5 @@
 import components.Message
+import components.enums.InteractionCallbackTypes
 import components.interactions.Interaction
 import gateway.events.DispatchEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -64,6 +65,10 @@ class DiscordClient(internal val token: String) {
         return createChannelMessage(channelId, message)
 
     }
+    
+    suspend fun respondWithMessage(interaction: Interaction, init: (Message.() -> Unit)) {
+        createInteractionResponse(interaction.id.value,interaction.token, InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE, Message().apply(init))
+    }
     //endregion
 
     //#region WebSocket
@@ -76,7 +81,7 @@ class DiscordClient(internal val token: String) {
      * 
      * @see [DiscordIntents](https://discord.com/developers/docs/events/gateway#gateway-intents)
      */
-    suspend fun login(intents: Int) = wssSession.connect(intents)
+    fun login(intents: Int) = wssSession.connect(intents)
 
     //#endregion
 }

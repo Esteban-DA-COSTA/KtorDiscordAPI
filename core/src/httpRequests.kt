@@ -1,5 +1,7 @@
 import components.Message
 import components.RolePayload
+import components.enums.InteractionCallbackTypes
+import components.interactions.InteractionCallBack
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -21,6 +23,15 @@ suspend fun DiscordClient.createChannelMessage(channelId: String, message: Messa
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
         setBody(message)
+    }
+}
+
+suspend fun DiscordClient.createInteractionResponse(interactionId: String, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: Message): HttpResponse {
+    val interactionCallBack = InteractionCallBack(interactionCallBackType, message)
+    return httpClient.post("$discordURL/interactions/$interactionId/$interactionToken/callback") {
+        buildDiscordHeader(token)
+        contentType(ContentType.Application.Json)
+        setBody(interactionCallBack)
     }
 }
 
