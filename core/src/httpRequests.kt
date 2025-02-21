@@ -1,15 +1,30 @@
 import components.Message
 import components.RolePayload
+import components.Snowflake
 import components.enums.InteractionCallbackTypes
+import components.interactions.ApplicationCommandData
 import components.interactions.InteractionCallBack
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 
 suspend fun DiscordClient.getApplication(applicationId: String): HttpResponse {
     return httpClient.get("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$applicationId") {
         buildDiscordHeader(token)
     }
+}
+
+suspend fun DiscordClient.getMeApplicationId(): Snowflake {
+    val response = httpClient.get("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/@me") {
+        buildDiscordHeader(token)
+    }
+    val jsonBody = response.body<JsonElement>()
+    val primitive = jsonBody.jsonObject["id"] as JsonPrimitive
+    return Snowflake(primitive.content)
 }
 
 private suspend fun DiscordClient.getGateway(): HttpResponse {
@@ -71,4 +86,15 @@ suspend fun DiscordClient.getRoles(guildId: String): HttpResponse {
     return httpClient.get("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.ROLES.text}") {
         buildDiscordHeader(token)
     }
+}
+
+suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: ApplicationCommandData.() -> Unit): HttpResponse {
+    val appId = this.applicationId
+    val appCommand = ApplicationCommandData(id = Snowflake("-1"), name = name).apply(init)
+    return httpClient.post("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$appId/${DiscordEndpoints.COMMANDS.text}") {
+        buildDiscordHeader(token)
+        contentType(ContentType.Application.Json)
+        setBody(appCommand)
+    }
+    
 }

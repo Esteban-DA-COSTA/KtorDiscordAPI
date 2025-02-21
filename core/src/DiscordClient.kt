@@ -10,8 +10,10 @@ import io.ktor.client.plugins.websocket.*
 import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 
 /**
@@ -43,6 +45,7 @@ class DiscordClient(internal val token: String) {
 
     // Channel for classic events received from Discord
     val events = Channel<DispatchEvent>()
+
     // Channel for interaction events
     val interactions = Channel<Interaction>()
 
@@ -51,6 +54,17 @@ class DiscordClient(internal val token: String) {
 
     internal var apiVersion = 10
     internal var discordURL = "https://discord.com/api/v$apiVersion"
+
+    internal lateinit var applicationId: String
+
+    init {
+        runBlocking {
+            launch {
+                applicationId = getMeApplicationId().value
+            }.join()
+        }
+        
+    }
 
     //#region HTTP Calls
     /**
@@ -65,9 +79,14 @@ class DiscordClient(internal val token: String) {
         return createChannelMessage(channelId, message)
 
     }
-    
+
     suspend fun respondWithMessage(interaction: Interaction, init: (Message.() -> Unit)) {
-        createInteractionResponse(interaction.id.value,interaction.token, InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE, Message().apply(init))
+        createInteractionResponse(
+            interaction.id.value,
+            interaction.token,
+            InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
+            Message().apply(init)
+        )
     }
     //endregion
 
@@ -78,7 +97,7 @@ class DiscordClient(internal val token: String) {
      * After log in, the bot will be able to receive events from discord.
      *
      * @param intents the discord intents identification number.
-     * 
+     *
      * @see [DiscordIntents](https://discord.com/developers/docs/events/gateway#gateway-intents)
      */
     fun login(intents: Int) = wssSession.connect(intents)
