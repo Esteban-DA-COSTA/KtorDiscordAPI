@@ -1,3 +1,3 @@
 fun main() {
-    prinln("Hello Amper")
+    println("Hello Amper")
 }
