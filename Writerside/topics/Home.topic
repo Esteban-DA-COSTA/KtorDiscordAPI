@@ -1,0 +1,24 @@
+<topic xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       title="Kotlin Discord API" id="Home">
+    <section-starting-page>
+        <title>Kotlin Discord API - KDA</title>
+        <description>
+            My app
+        </description>
+        <spotlight>
+            <title>Getting started</title>
+            <card href="Basic_usage.md" summary="Getting started with the library" badge="start"/>
+            <card href="Core_module.md" summary="The core module" badge="case"/>
+        </spotlight>
+
+        <primary>
+            <title>Main group</title>
+            <card href="Basic_usage.md" summary="Basic usage of the library"/>
+        </primary>
+        <secondary>
+            <title>Secondary group</title>
+            <card href="Core_module.md" summary="The core module"/>
+        </secondary>
+    </section-starting-page>
+</topic>
