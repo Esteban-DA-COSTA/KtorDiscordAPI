@@ -1,7 +1,7 @@
 package components.interactions
 
 import components.*
-import components.enums.ApplicationCommandDataTypes
+import components.enums.ApplicationCommandTypes
 import components.enums.InteractionTypes
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -56,9 +56,9 @@ sealed class InteractionData {
 data class ApplicationCommandData(
     val id: Snowflake,
     val name: String,
-    var type: ApplicationCommandDataTypes = ApplicationCommandDataTypes.CHAT_INPUT,
+    var type: ApplicationCommandTypes = ApplicationCommandTypes.CHAT_INPUT,
     var resolved: ResolvedData? = null,
-    var options: List<ApplicationCommandOption>? = null,
+    var options: List<ApplicationCommandDataOption>? = null,
     @SerialName("guild_id")
     var guildId: Snowflake? = null,
     @SerialName("target_id")
@@ -85,10 +85,10 @@ data class ResolvedData(
 )
 
 @Serializable
-data class ApplicationCommandOption(
+data class ApplicationCommandDataOption(
     val name: String,
 //    val type: ApplicationCommandOptionTypes,
     val value: String?,
-    val options: List<ApplicationCommandOption>?,
+    val options: List<ApplicationCommandDataOption>?,
     val focused: Boolean?
 )

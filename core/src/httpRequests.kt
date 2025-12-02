@@ -2,8 +2,10 @@ import components.Message
 import components.RolePayload
 import components.Snowflake
 import components.enums.InteractionCallbackTypes
+import components.interactions.ApplicationCommand
 import components.interactions.ApplicationCommandData
 import components.interactions.InteractionCallBack
+import components.snowflake
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -88,13 +90,18 @@ suspend fun DiscordClient.getRoles(guildId: String): HttpResponse {
     }
 }
 
-suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: ApplicationCommandData.() -> Unit): HttpResponse {
+suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: ApplicationCommand.() -> Unit): HttpResponse {
     val appId = this.applicationId
-    val appCommand = ApplicationCommandData(id = Snowflake("-1"), name = name).apply(init)
+    val appCommand = ApplicationCommand(id = Snowflake("-1"), name = name, type = 0, description = "").apply(init)
     return httpClient.post("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$appId/${DiscordEndpoints.COMMANDS.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
         setBody(appCommand)
     }
-    
+}
+
+suspend fun DiscordClient.getGlobalApplicationCommands(applicationId: String): HttpResponse {
+    return httpClient.get("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$applicationId/${DiscordEndpoints.COMMANDS.text}") {
+        buildDiscordHeader(token)
+    }
 }
