@@ -3,7 +3,9 @@ import components.Snowflake
 import components.enums.InteractionTypes
 import components.interactions.ApplicationCommandData
 import components.interactions.Interaction
+import components.snowflake
 import gateway.events.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
@@ -46,11 +48,17 @@ fun main(): Unit = runBlocking {
             }
         }
     }
+    
+    val response = discordClient.createGlobalApplicationCommand("pingit") {
+        description = "Send a embed ping message"
+    }
+    println(response)
+    println(response.bodyAsText())
 }
 
 suspend fun handleEmbedInteractionCommand(interaction: Interaction, discordClient: DiscordClient) {
     val interactionData = interaction.data as ApplicationCommandData
-    if (interactionData.id == Snowflake ("1229445667831808122")) {
+    if (interaction.id == "1229445667831808122".snowflake) {
         val stringToEmbed = interactionData.options?.get(0)?.value as String
         discordClient.respondWithMessage(interaction) {
             embed {

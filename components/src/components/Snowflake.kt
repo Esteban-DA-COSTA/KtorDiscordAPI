@@ -24,3 +24,16 @@ value class Snowflake(val value: String) {
         return value
     }
 }
+
+/**
+ * Extension property for the String class that converts a string value into a [Snowflake] instance.
+ *
+ * This property serves as a shorthand for constructing a [Snowflake] object,
+ * which is used as a lightweight and type-safe representation of unique identifiers.
+ *
+ * The resulting [Snowflake] instance encapsulates the string value and provides
+ * additional functionality, such as serialization. It is particularly useful in contexts
+ * where unique identifiers (e.g., IDs for roles, users, or teams) are frequently used.
+ */
+val String.snowflake
+    get() = Snowflake(this)

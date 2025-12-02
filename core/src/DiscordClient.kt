@@ -1,16 +1,18 @@
 import components.Message
 import components.enums.InteractionCallbackTypes
+import components.enums.InteractionTypes
+import components.interactions.ApplicationCommand
 import components.interactions.Interaction
 import gateway.events.DispatchEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -56,14 +58,15 @@ class DiscordClient(internal val token: String) {
     internal var discordURL = "https://discord.com/api/v$apiVersion"
 
     internal lateinit var applicationId: String
+    private lateinit var interactionManager: InteractionManager
 
     init {
         runBlocking {
             launch {
                 applicationId = getMeApplicationId().value
-            }.join()
+                interactionManager = InteractionManager(this@DiscordClient)
+            }
         }
-        
     }
 
     //#region HTTP Calls
@@ -80,6 +83,13 @@ class DiscordClient(internal val token: String) {
 
     }
 
+    /**
+     * Sends a response message to a Discord interaction. This method creates an interaction response
+     * of type `CHANNEL_MESSAGE_WITH_SOURCE` and utilizes the passed `Message` configuration.
+     *
+     * @param interaction The interaction object representing the Discord interaction to respond to.
+     * @param init A lambda function used to configure the message to be sent as a response.
+     */
     suspend fun respondWithMessage(interaction: Interaction, init: (Message.() -> Unit)) {
         createInteractionResponse(
             interaction.id.value,
