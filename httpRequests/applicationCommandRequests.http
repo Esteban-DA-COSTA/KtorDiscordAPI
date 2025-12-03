@@ -1,0 +1,7 @@
+### Get Global commands
+GET {{base_url}}/applications/{{app_id}}/commands
+Authorization: Bot {{token}}
+
+### Get Guild Commands
+GET {{base_url}}/applications/{{app_id}}/guilds/1085243519339331644/commands
+Authorization: Bot {{token}}
