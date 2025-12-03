@@ -1,5 +1,4 @@
 import builders.embed
-import components.enums.InteractionTypes
 import components.interactions.ApplicationCommandData
 import components.interactions.Interaction
 import components.snowflake
@@ -41,8 +40,9 @@ fun main(): Unit = runBlocking {
     println(response)
     println(response.bodyAsText())
 
-    discordClient.setInteractionAction("pingit") {
-
+    discordClient.on("pingit") {
+        ack()
+        respondWithMessage()
     }
 
 

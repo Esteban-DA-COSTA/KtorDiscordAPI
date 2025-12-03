@@ -1,14 +1,11 @@
 import components.Message
-import components.Snowflake
 import components.enums.InteractionCallbackTypes
 import components.enums.InteractionTypes
 import components.interactions.ApplicationCommand
-import components.interactions.ApplicationCommandData
 import components.interactions.Interaction
 import gateway.events.DispatchEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.websocket.*
@@ -133,12 +130,12 @@ class DiscordClient(internal val token: String) {
 
     //#endregion
 
-    fun setInteractionAction(commandName: String, action: suspend ApplicationCommandAction.(Interaction) -> Unit) {
+    fun on(commandName: String, action: suspend ApplicationCommandAction.(Interaction) -> Unit) {
 
         try {
             val command = interactionManager.appCommands.keys.firstOrNull(ApplicationCommand::equals) ?: throw NoSuchElementException()
-            val action = ApplicationCommandAction(command, this, action)
-            interactionManager.appCommands[command] = action
+            val commandAction = ApplicationCommandAction(command, this, action)
+            interactionManager.appCommands[command] = commandAction
 
         } catch (_: NoSuchElementException) {
             interactionManager.logger.error { "Interaction command $commandName not found" }
@@ -146,9 +143,8 @@ class DiscordClient(internal val token: String) {
     }
 
     private suspend fun onInteractionReceived(interaction: Interaction) {
-        interactionManager.appCommands.keys.firstOrNull(interaction.data!!::equals)?.run {
-            val commandAction = interactionManager.appCommands[this]!!
-            commandAction.action(interaction)
+        interactionManager.appCommands.keys.firstOrNull(interaction.data!!::equals)?.let {
+            interactionManager.appCommands[it]?.executeAction(interaction)
         }
 
     }
