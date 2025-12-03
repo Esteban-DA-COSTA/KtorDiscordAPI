@@ -21,7 +21,14 @@ data class ApplicationCommand(
     var defaultMemberPermissions: String? = null, // Nullable permissions bitfield
     var context: List<InteractionContextTypes>? = null,
     var nsfw: Boolean? = null, // Nullable flag for 'not safe for work'
-): DiscordCommand
+): DiscordCommand {
+    override operator fun equals(other: Any?): Boolean {
+        return if (other is ApplicationCommand) {
+            id == other.id || name == other.name
+        } else
+            super.equals(other)
+    }
+}
 
 @Serializable
 data class ApplicationCommandOption(

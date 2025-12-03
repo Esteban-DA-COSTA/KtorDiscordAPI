@@ -88,7 +88,7 @@ data class ResolvedData(
 data class ApplicationCommandDataOption(
     val name: String,
 //    val type: ApplicationCommandOptionTypes,
-    val value: String?,
-    val options: List<ApplicationCommandDataOption>?,
-    val focused: Boolean?
+    val value: String? = null,
+    val options: List<ApplicationCommandDataOption>? = null,
+    val focused: Boolean? = null
 )

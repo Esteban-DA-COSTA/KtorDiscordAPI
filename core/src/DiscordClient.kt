@@ -1,7 +1,9 @@
 import components.Message
+import components.Snowflake
 import components.enums.InteractionCallbackTypes
 import components.enums.InteractionTypes
 import components.interactions.ApplicationCommand
+import components.interactions.ApplicationCommandData
 import components.interactions.Interaction
 import gateway.events.DispatchEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -17,6 +19,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import kotlin.collections.set
 
 /**
  * Discord client.
@@ -25,6 +28,7 @@ import kotlinx.serialization.json.Json
  */
 class DiscordClient(internal val token: String) {
     private val httpClientLogger = KotlinLogging.logger("HTTP_LOGGER")
+    private val wsClientLogger = KotlinLogging.logger("WS_LOGGER")
 
     // The http client used to send requests
     internal var httpClient: HttpClient = HttpClient(CIO) {
@@ -65,6 +69,21 @@ class DiscordClient(internal val token: String) {
             launch {
                 applicationId = getMeApplicationId().value
                 interactionManager = InteractionManager(this@DiscordClient)
+            }
+            launch {
+                for (interaction in interactions) {
+                    when (interaction.type) {
+                        InteractionTypes.APPLICATION_COMMAND -> {
+                            onInteractionReceived(interaction)
+                        }
+
+                        else -> {
+                            this@DiscordClient.wsClientLogger.error {
+                                "Received an interaction that I don't know how to handle: ${interaction.type}"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -113,4 +132,24 @@ class DiscordClient(internal val token: String) {
     fun login(intents: Int) = wssSession.connect(intents)
 
     //#endregion
+
+    fun setInteractionAction(commandName: String, action: suspend ApplicationCommandAction.(Interaction) -> Unit) {
+
+        try {
+            val command = interactionManager.appCommands.keys.firstOrNull(ApplicationCommand::equals) ?: throw NoSuchElementException()
+            val action = ApplicationCommandAction(command, this, action)
+            interactionManager.appCommands[command] = action
+
+        } catch (_: NoSuchElementException) {
+            interactionManager.logger.error { "Interaction command $commandName not found" }
+        }
+    }
+
+    private suspend fun onInteractionReceived(interaction: Interaction) {
+        interactionManager.appCommands.keys.firstOrNull(interaction.data!!::equals)?.run {
+            val commandAction = interactionManager.appCommands[this]!!
+            commandAction.action(interaction)
+        }
+
+    }
 }

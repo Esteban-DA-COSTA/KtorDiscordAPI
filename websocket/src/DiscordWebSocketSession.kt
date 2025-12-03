@@ -54,7 +54,7 @@ class DiscordWebSocketSession(
                         is HelloEvent -> initHeartBeat(event, intents)
                         is HBackEvent -> hasReceiveHBACK = true
                         is DispatchEvent -> onReceiveDispatchEvent(event)
-                        else -> println(event!!::class.simpleName)
+                        else -> wssLogger.error { event!!::class.simpleName }
                     }
                 }
 
@@ -85,6 +85,7 @@ class DiscordWebSocketSession(
      * @param intents
      */
     private suspend fun initHeartBeat(event: HelloEvent, intents: Int) {
+        wssLogger.trace { "Initializing heartbeat" }
         heartBeatInterval = event.heartbeatInterval
         // Use a random on the first heartbeat to avoid overheating
         delay((heartBeatInterval * Random.nextFloat()).toLong())
@@ -113,6 +114,7 @@ class DiscordWebSocketSession(
                     wssSession.close(CloseReason(CloseReason.Codes.NOT_CONSISTENT, "No HeartBeat ACK received"))
                     hasReceiveHBACK = false
                     needGatewayClose = true
+                    wssLogger.error { "Gateway closed" }
                 }
             }
         }

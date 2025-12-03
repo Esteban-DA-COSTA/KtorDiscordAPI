@@ -92,7 +92,7 @@ suspend fun DiscordClient.getRoles(guildId: String): HttpResponse {
 
 suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: ApplicationCommand.() -> Unit): HttpResponse {
     val appId = this.applicationId
-    val appCommand = ApplicationCommand(id = Snowflake("-1"), name = name, type = 0, description = "").apply(init)
+    val appCommand = ApplicationCommand(id = Snowflake("-1"), name = name, type = 0, applicationId = this.applicationId.snowflake, description = "").apply(init)
     return httpClient.post("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$appId/${DiscordEndpoints.COMMANDS.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
