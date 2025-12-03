@@ -1,4 +1,5 @@
 import components.interactions.Interaction
+import components.interactions.InteractionData
 import gateway.events.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*

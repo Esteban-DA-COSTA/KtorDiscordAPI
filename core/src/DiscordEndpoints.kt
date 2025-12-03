@@ -3,5 +3,6 @@ enum class DiscordEndpoints(val text: String) {
     GUILDS("guilds"),
     ROLES("roles"),
     CHANNELS("channels"),
-    MESSAGES("messages")
+    MESSAGES("messages"),
+    COMMANDS("commands"),
 }
