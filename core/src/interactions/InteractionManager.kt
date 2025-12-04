@@ -1,12 +1,13 @@
-import components.Snowflake
-import components.enums.InteractionTypes
+package interactions
+
+import DiscordClient
 import components.interactions.ApplicationCommand
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.call.*
 import kotlinx.coroutines.runBlocking
 
 class InteractionManager(private val client: DiscordClient) {
-    val logger = KotlinLogging.logger(InteractionManager::class.simpleName ?: "InteractionManager")
+    val logger = KotlinLogging.logger(InteractionManager::class.simpleName ?: "interactions.InteractionManager")
 
     val appCommands: MutableMap<ApplicationCommand, ApplicationCommandAction?> = mutableMapOf()
 

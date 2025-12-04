@@ -4,6 +4,9 @@ import components.enums.InteractionTypes
 import components.interactions.ApplicationCommand
 import components.interactions.Interaction
 import gateway.events.DispatchEvent
+import interactions.ApplicationCommandAction
+import interactions.InteractionManager
+import interactions.createInteractionResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -12,6 +15,8 @@ import io.ktor.client.plugins.websocket.*
 import io.ktor.client.statement.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -67,17 +72,17 @@ class DiscordClient(internal val token: String) {
                 applicationId = getMeApplicationId().value
                 interactionManager = InteractionManager(this@DiscordClient)
             }
-            launch {
-                for (interaction in interactions) {
-                    when (interaction.type) {
-                        InteractionTypes.APPLICATION_COMMAND -> {
-                            onInteractionReceived(interaction)
-                        }
+        }
+        CoroutineScope(Dispatchers.Default).launch {
+            for (interaction in interactions) {
+                when (interaction.type) {
+                    InteractionTypes.APPLICATION_COMMAND -> {
+                        onInteractionReceived(interaction)
+                    }
 
-                        else -> {
-                            this@DiscordClient.wsClientLogger.error {
-                                "Received an interaction that I don't know how to handle: ${interaction.type}"
-                            }
+                    else -> {
+                        this@DiscordClient.wsClientLogger.error {
+                            "Received an interaction that I don't know how to handle: ${interaction.type}"
                         }
                     }
                 }
@@ -98,22 +103,6 @@ class DiscordClient(internal val token: String) {
         return createChannelMessage(channelId, message)
 
     }
-
-    /**
-     * Sends a response message to a Discord interaction. This method creates an interaction response
-     * of type `CHANNEL_MESSAGE_WITH_SOURCE` and utilizes the passed `Message` configuration.
-     *
-     * @param interaction The interaction object representing the Discord interaction to respond to.
-     * @param init A lambda function used to configure the message to be sent as a response.
-     */
-    suspend fun respondWithMessage(interaction: Interaction, init: (Message.() -> Unit)) {
-        createInteractionResponse(
-            interaction.id.value,
-            interaction.token,
-            InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
-            Message().apply(init)
-        )
-    }
     //endregion
 
     //#region WebSocket
@@ -130,10 +119,15 @@ class DiscordClient(internal val token: String) {
 
     //#endregion
 
+    /**
+     * Define the callback function to use when receiving a specific command.
+     * @param commandName The name of the command.
+     * @param action the action function that will be run when receiving the command.
+     */
     fun on(commandName: String, action: suspend ApplicationCommandAction.(Interaction) -> Unit) {
 
         try {
-            val command = interactionManager.appCommands.keys.firstOrNull(ApplicationCommand::equals) ?: throw NoSuchElementException()
+            val command = interactionManager.appCommands.keys.firstOrNull{ it.equals(commandName) } ?: throw NoSuchElementException()
             val commandAction = ApplicationCommandAction(command, this, action)
             interactionManager.appCommands[command] = commandAction
 
@@ -141,6 +135,7 @@ class DiscordClient(internal val token: String) {
             interactionManager.logger.error { "Interaction command $commandName not found" }
         }
     }
+
 
     private suspend fun onInteractionReceived(interaction: Interaction) {
         interactionManager.appCommands.keys.firstOrNull(interaction.data!!::equals)?.let {

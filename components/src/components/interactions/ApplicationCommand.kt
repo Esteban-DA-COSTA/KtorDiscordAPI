@@ -7,7 +7,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ApplicationCommand(
+class ApplicationCommand(
     val id: Snowflake,
     val type: Int? = null, // Optional as per documentation
     @SerialName("application_id")
@@ -23,10 +23,12 @@ data class ApplicationCommand(
     var nsfw: Boolean? = null, // Nullable flag for 'not safe for work'
 ): DiscordCommand {
     override operator fun equals(other: Any?): Boolean {
-        return if (other is ApplicationCommand) {
-            id == other.id || name == other.name
-        } else
-            super.equals(other)
+        return when (other) {
+            is ApplicationCommand -> id == other.id || name == other.name
+            is ApplicationCommandData -> id == other.id || name == other.name
+            is String -> name == other
+            else -> super.equals(other)
+        }
     }
 }
 

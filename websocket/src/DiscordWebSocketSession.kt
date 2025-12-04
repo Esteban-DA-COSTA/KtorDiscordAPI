@@ -47,13 +47,15 @@ class DiscordWebSocketSession(
             host = "gateway.discord.gg",
             path = "/?v=10&encoding=json"
         )
+        wssLogger.trace { "Connected to Discord with $intents" }
+        // Management of incoming Event
         for (frame in wssSession.incoming) {
             when (frame) {
                 is Frame.Text -> {
                     when (val event = wssSession.converter?.deserialize<Event>(frame)) {
-                        is HelloEvent -> initHeartBeat(event, intents)
-                        is HBackEvent -> hasReceiveHBACK = true
-                        is DispatchEvent -> onReceiveDispatchEvent(event)
+                        is HelloEvent -> initHeartBeat(event, intents) // Used for internal purpose
+                        is HBackEvent -> hasReceiveHBACK = true // Used for internal purpose
+                        is DispatchEvent -> onReceiveDispatchEvent(event) // Event that users will use
                         else -> wssLogger.error { event!!::class.simpleName }
                     }
                 }

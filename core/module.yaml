@@ -19,3 +19,4 @@ settings:
   # Enable Kotlin serialization
   kotlin:
     serialization: json
+    freeCompilerArgs: [ -Xcontext-parameters ]

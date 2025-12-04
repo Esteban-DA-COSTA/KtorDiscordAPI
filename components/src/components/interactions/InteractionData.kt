@@ -64,7 +64,15 @@ data class ApplicationCommandData(
     @SerialName("target_id")
     var targetId: Snowflake? = null,
     var description: String? = null
-) : InteractionData()
+) : InteractionData() {
+    override operator fun equals(other: Any?): Boolean {
+        return when (other) {
+            is ApplicationCommand -> id == other.id || name == other.name
+            is ApplicationCommandData -> id == other.id || name == other.name
+            else -> super.equals(other)
+        }
+    }
+}
 
 @Serializable
 data class MessageComponentData(

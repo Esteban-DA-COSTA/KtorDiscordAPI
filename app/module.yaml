@@ -2,3 +2,7 @@ product:
   type: jvm/app
 dependencies:
   - ../core
+settings:
+  kotlin:
+    freeCompilerArgs:
+      - "-Xcontext-parameters"

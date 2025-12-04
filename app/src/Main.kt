@@ -1,14 +1,13 @@
-import builders.embed
 import components.interactions.ApplicationCommandData
-import components.interactions.Interaction
-import components.snowflake
 import gateway.events.MessageCreateEvent
 import gateway.events.ReadyEvent
+import interactions.createGlobalApplicationCommand
 import io.ktor.client.statement.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-fun main(): Unit = runBlocking {
+fun main() = runBlocking {
     val discordClient = DiscordClient("secret")
         .also { it.login(33283) }
     launch {
@@ -34,29 +33,22 @@ fun main(): Unit = runBlocking {
             }
         }
     }
+    discordClient.on("embed") {
+        context(it) {
+            differeMessage()
+            delay(3000)
+            val data = it.data as ApplicationCommandData
+            respondWithMessage {
+                content = "Hello"
+            }
+        }
+    }
+
     val response = discordClient.createGlobalApplicationCommand("pingit") {
         description = "Send a embed ping message"
     }
     println(response)
     println(response.bodyAsText())
 
-    discordClient.on("pingit") {
-        ack()
-        respondWithMessage()
-    }
 
-
-}
-
-suspend fun handleEmbedInteractionCommand(interaction: Interaction, discordClient: DiscordClient) {
-    val interactionData = interaction.data as ApplicationCommandData
-    if (interactionData.id == "1229445667831808122".snowflake) {
-        val stringToEmbed = interactionData.options?.get(0)?.value as String
-        discordClient.respondWithMessage(interaction) {
-            embed {
-                title = "Embeded message"
-                content = stringToEmbed
-            }
-        }
-    }
 }
