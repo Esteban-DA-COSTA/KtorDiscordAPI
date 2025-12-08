@@ -26,6 +26,7 @@ class ApplicationCommand(
         return when (other) {
             is ApplicationCommand -> id == other.id || name == other.name
             is ApplicationCommandData -> id == other.id || name == other.name
+            is Snowflake -> id == other
             is String -> name == other
             else -> super.equals(other)
         }

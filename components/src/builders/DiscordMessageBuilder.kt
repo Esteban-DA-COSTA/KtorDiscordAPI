@@ -77,10 +77,10 @@ fun Embed.author(init: EmbedAuthor.() -> Unit) {
 }
 
 @DiscordMessageBuilder
-fun Embed.field(init: components.EmbedField.() -> Unit) {
+fun Embed.field(init: EmbedField.() -> Unit) {
     if (this.fields == null)
         this.fields = mutableListOf()
-    this.fields!!.add(components.EmbedField().apply(init))
+    this.fields!!.add(EmbedField().apply(init))
 }
 //#endregion
 

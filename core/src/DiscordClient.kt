@@ -1,12 +1,11 @@
 import components.Message
-import components.enums.InteractionCallbackTypes
+import components.Snowflake
 import components.enums.InteractionTypes
 import components.interactions.ApplicationCommand
 import components.interactions.Interaction
 import gateway.events.DispatchEvent
 import interactions.ApplicationCommandAction
 import interactions.InteractionManager
-import interactions.createInteractionResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -29,7 +28,7 @@ import kotlin.collections.set
  * @property token The application identification token.
  */
 class DiscordClient(internal val token: String) {
-    private val httpClientLogger = KotlinLogging.logger("HTTP_LOGGER")
+    internal val httpClientLogger = KotlinLogging.logger("HTTP_LOGGER")
     private val wsClientLogger = KotlinLogging.logger("WS_LOGGER")
 
     // The http client used to send requests
@@ -125,15 +124,29 @@ class DiscordClient(internal val token: String) {
      * @param action the action function that will be run when receiving the command.
      */
     fun on(commandName: String, action: suspend ApplicationCommandAction.(Interaction) -> Unit) {
-
         try {
-            val command = interactionManager.appCommands.keys.firstOrNull{ it.equals(commandName) } ?: throw NoSuchElementException()
-            val commandAction = ApplicationCommandAction(command, this, action)
-            interactionManager.appCommands[command] = commandAction
-
+            val command = interactionManager.appCommands.keys.firstOrNull { it.equals(commandName) }
+                ?: throw NoSuchElementException()
+            assignCommandAction(command, action)
         } catch (_: NoSuchElementException) {
             interactionManager.logger.error { "Interaction command $commandName not found" }
+
         }
+    }
+
+    fun on(commandId: Snowflake, action: suspend ApplicationCommandAction.(Interaction) -> Unit) {
+        try {
+            val command = interactionManager.appCommands.keys.firstOrNull { it.equals(commandId) }
+                ?: throw NoSuchElementException()
+            assignCommandAction(command, action)
+        } catch (_: NoSuchElementException) {
+            interactionManager.logger.error { "Interaction command $commandId not found" }
+        }
+    }
+
+    private fun assignCommandAction(command: ApplicationCommand, action: suspend ApplicationCommandAction.(Interaction) -> Unit) {
+        val commandAction = ApplicationCommandAction(command, this, action)
+        interactionManager.appCommands[command] = commandAction
     }
 
 

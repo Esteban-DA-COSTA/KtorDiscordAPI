@@ -29,7 +29,6 @@ object OPCodeSerializer : KSerializer<OPCode> {
     override fun serialize(encoder: Encoder, value: OPCode) = encoder.encodeInt(value.opCode)
 
     private fun getByCode(op: Int): OPCode {
-        println(op)
         return OPCode.entries.first { op == it.opCode }
     }
 }

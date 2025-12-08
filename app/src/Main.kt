@@ -1,3 +1,8 @@
+import builders.author
+import builders.embed
+import builders.field
+import builders.iconUrl
+import builders.name
 import components.interactions.ApplicationCommandData
 import gateway.events.MessageCreateEvent
 import gateway.events.ReadyEvent
@@ -38,8 +43,24 @@ fun main() = runBlocking {
             differeMessage()
             delay(3000)
             val data = it.data as ApplicationCommandData
-            respondWithMessage {
-                content = "Hello"
+            val member = it.member
+            val messageOption = data.options?.first { opt ->
+                opt.name == "message"
+            }
+            editOriginalResponse {
+                embed {
+                    field {
+                        name = "Embeded"
+                        value = messageOption?.value ?: "Option not set"
+                    }
+                    member?.let { member ->
+                        author {
+                            member.user?.let { user ->
+                                name(user.username ?: "Unknown")
+                            }
+                        }
+                    }
+                }
             }
         }
     }

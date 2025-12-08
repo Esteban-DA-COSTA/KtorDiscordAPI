@@ -9,6 +9,7 @@ import components.interactions.ApplicationCommand
 import components.interactions.InteractionCallBack
 import components.snowflake
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -21,6 +22,14 @@ suspend fun DiscordClient.createInteractionResponse(interactionId: String, inter
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
         setBody(interactionCallBack)
+    }
+}
+
+suspend fun DiscordClient.editOriginalInteractionResponse(applicationId: String, interactionToken: String, message: Message): HttpResponse {
+    return httpClient.patch("$discordURL/webhooks/$applicationId/$interactionToken/messages/@original") {
+        buildDiscordHeader(token)
+        contentType(ContentType.Application.Json)
+        setBody(message)
     }
 }
 
