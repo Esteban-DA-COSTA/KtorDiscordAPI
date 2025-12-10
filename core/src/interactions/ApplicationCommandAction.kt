@@ -5,10 +5,8 @@ import components.Message
 import components.enums.InteractionCallbackTypes
 import components.interactions.ApplicationCommand
 import components.interactions.Interaction
-import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.isSuccess
+import io.ktor.client.statement.*
+import io.ktor.http.*
 
 class ApplicationCommandAction(
     val applicationCommand: ApplicationCommand,
@@ -16,7 +14,9 @@ class ApplicationCommandAction(
     var action: suspend ApplicationCommandAction.(Interaction) -> Unit = {}
 ) {
 
-    suspend inline fun executeAction(interaction: Interaction) = action(interaction)
+    suspend inline fun executeAction(interaction: Interaction) {
+        action(interaction)
+    }
 
 
     context(interaction: Interaction)

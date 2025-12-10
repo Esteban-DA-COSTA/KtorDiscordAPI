@@ -1,13 +1,13 @@
 import builders.author
 import builders.embed
 import builders.field
-import builders.iconUrl
 import builders.name
+import components.enums.ApplicationCommandTypes
+import components.enums.InteractionContextTypes
 import components.interactions.ApplicationCommandData
 import gateway.events.MessageCreateEvent
 import gateway.events.ReadyEvent
 import interactions.createGlobalApplicationCommand
-import io.ktor.client.statement.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -38,6 +38,18 @@ fun main() = runBlocking {
             }
         }
     }
+    createAppCommand(discordClient)
+    handleAppCommandInteractions(discordClient)
+}
+
+suspend fun createAppCommand(discordClient: DiscordClient) {
+    discordClient.createGlobalApplicationCommand("whoiam", ApplicationCommandTypes.CHAT_INPUT) {
+        description = "Shows who you are"
+    }
+    println("Finish creating app command")
+}
+
+fun handleAppCommandInteractions(discordClient: DiscordClient) {
     discordClient.on("embed") {
         context(it) {
             differeMessage()
@@ -64,12 +76,28 @@ fun main() = runBlocking {
             }
         }
     }
+    discordClient.on("whoiam") {
+        context(it) {
+            differeMessage()
 
-    val response = discordClient.createGlobalApplicationCommand("pingit") {
-        description = "Send a embed ping message"
+            val (user, member) = when (it.context) {
+                InteractionContextTypes.GUILD -> Pair(it.member!!.user!!, it.member!!)
+                else -> Pair(it.user!!, null)
+            }
+            editOriginalResponse {
+                embed {
+                    field {
+                        name = "User"
+                        value = user.username ?: "Unknown"
+                    }
+                    member?.let { member ->
+                        field {
+                            name = "Member"
+                            value = member.nick ?: "No nickname"
+                        }
+                    }
+                }
+            }
+        }
     }
-    println(response)
-    println(response.bodyAsText())
-
-
 }

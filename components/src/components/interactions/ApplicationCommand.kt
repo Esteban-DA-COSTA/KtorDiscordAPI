@@ -1,6 +1,7 @@
 package components.interactions
 
 import components.Snowflake
+import components.enums.ApplicationCommandOptionTypes
 import components.enums.ApplicationCommandTypes
 import components.enums.InteractionContextTypes
 import kotlinx.serialization.SerialName
@@ -9,7 +10,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class ApplicationCommand(
     val id: Snowflake,
-    val type: Int? = null, // Optional as per documentation
+    val type: ApplicationCommandTypes? = null, // Optional as per documentation
     @SerialName("application_id")
     val applicationId: Snowflake,
     @SerialName("guild_id")
@@ -36,7 +37,7 @@ class ApplicationCommand(
 @Serializable
 data class ApplicationCommandOption(
     val name: String,
-    val type: ApplicationCommandTypes,
+    val type: ApplicationCommandOptionTypes,
     var description: String,
     var required: Boolean? = null,
     val choices: List<String>? = null,

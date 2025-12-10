@@ -1,5 +1,4 @@
 import components.interactions.Interaction
-import components.interactions.InteractionData
 import gateway.events.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
@@ -75,6 +74,7 @@ class DiscordWebSocketSession(
      */
     private suspend fun onReceiveDispatchEvent(event: DispatchEvent) {
         if (event is InteractionCreateEvent) {
+            wssLogger.debug { "Send to channel" }
             channelInteraction.send(event.interaction)
         } else
             channelEvents.send(event)

@@ -20,7 +20,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import kotlin.collections.set
 
 /**
  * Discord client.
@@ -63,7 +62,7 @@ class DiscordClient(internal val token: String) {
     internal var discordURL = "https://discord.com/api/v$apiVersion"
 
     internal lateinit var applicationId: String
-    private lateinit var interactionManager: InteractionManager
+    internal lateinit var interactionManager: InteractionManager
 
     init {
         runBlocking {
@@ -72,16 +71,18 @@ class DiscordClient(internal val token: String) {
                 interactionManager = InteractionManager(this@DiscordClient)
             }
         }
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             for (interaction in interactions) {
-                when (interaction.type) {
-                    InteractionTypes.APPLICATION_COMMAND -> {
-                        onInteractionReceived(interaction)
-                    }
+                launch {
+                    when (interaction.type) {
+                        InteractionTypes.APPLICATION_COMMAND -> {
+                            onInteractionReceived(interaction)
+                        }
 
-                    else -> {
-                        this@DiscordClient.wsClientLogger.error {
-                            "Received an interaction that I don't know how to handle: ${interaction.type}"
+                        else -> {
+                            this@DiscordClient.wsClientLogger.error {
+                                "Received an interaction that I don't know how to handle: ${interaction.type}"
+                            }
                         }
                     }
                 }

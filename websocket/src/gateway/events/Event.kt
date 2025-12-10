@@ -126,6 +126,7 @@ private object EventSerializer : KSerializer<Event> {
                 interaction.data = interactionData
                 InteractionCreateEvent(sequenceId, interaction)
             }
+            else -> TODO("Not yet implemented for $dispatchEvent")
         }
     }
 
@@ -139,7 +140,11 @@ private object EventSerializer : KSerializer<Event> {
                 HBackEvent()
             }
 
-            else -> TODO()
+            else -> {
+                logger.debug { "Classic event received $opCode" }
+                TODO("Not yet implemented for $opCode")
+            }
+
         }
     }
 }

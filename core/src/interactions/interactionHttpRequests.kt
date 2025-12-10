@@ -1,20 +1,18 @@
 package interactions
 
 import DiscordClient
+import DiscordEndpoints
 import buildDiscordHeader
+import builders.GlobalApplicationCommandBuilderScope
 import components.Message
-import components.Snowflake
+import components.enums.ApplicationCommandTypes
 import components.enums.InteractionCallbackTypes
 import components.interactions.ApplicationCommand
 import components.interactions.InteractionCallBack
-import components.snowflake
-import io.ktor.client.request.get
-import io.ktor.client.request.patch
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 
 suspend fun DiscordClient.createInteractionResponse(interactionId: String, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: Message? = null): HttpResponse {
     val interactionCallBack = InteractionCallBack(interactionCallBackType, message)
@@ -33,14 +31,19 @@ suspend fun DiscordClient.editOriginalInteractionResponse(applicationId: String,
     }
 }
 
-suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: ApplicationCommand.() -> Unit): HttpResponse {
+suspend fun DiscordClient.createGlobalApplicationCommand(name: String, type: ApplicationCommandTypes, init: GlobalApplicationCommandBuilderScope.() -> Unit): HttpResponse {
     val appId = this.applicationId
-    val appCommand = ApplicationCommand(id = Snowflake("-1"), name = name, type = 0, applicationId = this.applicationId.snowflake, description = "").apply(init)
-    return httpClient.post("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$appId/${DiscordEndpoints.COMMANDS.text}") {
+    val appCmd = GlobalApplicationCommandBuilderScope(name, type).apply(init).build()
+    val response = httpClient.post("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$appId/${DiscordEndpoints.COMMANDS.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
-        setBody(appCommand)
+        setBody(appCmd)
     }
+    if (response.status.isSuccess()) {
+        val newApp = response.body<ApplicationCommand>()
+        this.interactionManager.appCommands[appCmd] = null
+    }
+    return response
 }
 
 suspend fun DiscordClient.getGlobalApplicationCommands(applicationId: String): HttpResponse {
