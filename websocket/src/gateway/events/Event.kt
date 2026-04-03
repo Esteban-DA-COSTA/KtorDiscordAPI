@@ -25,6 +25,7 @@ import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable(with = EventSerializer::class)
@@ -135,11 +136,21 @@ private object EventSerializer : KSerializer<Event> {
             OPCode.HELLO ->
                 jsonDecoder.json.decodeFromJsonElement(HelloEvent.serializer(), data!!)
 
-            HBACK -> {
-                HBackEvent()
+            HBACK -> HBackEvent()
+
+            OPCode.RECONNECT -> ReconnectEvent()
+
+            OPCode.INVALID_SESSION -> {
+                val resumable = data?.jsonPrimitive?.boolean ?: false
+                InvalidSessionEvent(resumable)
             }
 
-            else -> TODO()
+            OPCode.HEARTBEAT -> HeartbeatEvent(0)
+
+            else -> {
+                logger.warn { "Unhandled OPCode: $opCode" }
+                throw IllegalArgumentException("Unhandled OPCode: $opCode")
+            }
         }
     }
 }
