@@ -46,11 +46,22 @@ sealed class InteractionData {
                     jsonDecoder.json.decodeFromJsonElement<ApplicationCommandData>(data!!)
                 }
 
-                else -> TODO(type!!.name)
+                // Any other (or unknown/absent) interaction type: keep the raw payload
+                // instead of throwing, so a new Discord type can't crash the session.
+                else -> UnknownInteractionData(type, data)
             }
         }
     }
 }
+
+/**
+ * Fallback for interaction data whose [type] is not (yet) handled by the library.
+ * Carries the raw payload so nothing crashes and the consumer can still inspect it.
+ */
+data class UnknownInteractionData(
+    val type: InteractionTypes?,
+    val raw: JsonElement?
+) : InteractionData()
 
 @Serializable
 data class ApplicationCommandData(

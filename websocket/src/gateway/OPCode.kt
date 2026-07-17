@@ -1,14 +1,7 @@
 package gateway
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.KSerializer
+import components.serialization.IntEnumSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.buildSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 @Serializable(with = OPCodeSerializer::class)
 enum class OPCode(val opCode: Int) {
@@ -20,19 +13,9 @@ enum class OPCode(val opCode: Int) {
     INVALID_SESSION(9),
     HELLO(10),
     HBACK(11),
+    UNKNOWN(-1),
 }
 
-@OptIn(InternalSerializationApi::class)
-object OPCodeSerializer : KSerializer<OPCode> {
-    @OptIn(ExperimentalSerializationApi::class)
-    override val descriptor: SerialDescriptor
-        get() = buildSerialDescriptor("op", PrimitiveKind.INT)
-
-    override fun deserialize(decoder: Decoder): OPCode = getByCode(decoder.decodeInt())
-    override fun serialize(encoder: Encoder, value: OPCode) = encoder.encodeInt(value.opCode)
-
-    private fun getByCode(op: Int): OPCode {
-        return OPCode.entries.firstOrNull { op == it.opCode }
-            ?: throw IllegalArgumentException("Unknown OPCode: $op")
-    }
-}
+object OPCodeSerializer : IntEnumSerializer<OPCode>(
+    "op", OPCode.entries.toTypedArray(), { it.opCode }, OPCode.UNKNOWN
+)
