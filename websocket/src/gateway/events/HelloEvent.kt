@@ -1,4 +1,4 @@
-package gateway.events
+package ktordiscord.gateway.events
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

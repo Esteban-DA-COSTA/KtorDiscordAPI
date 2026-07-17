@@ -20,11 +20,11 @@ Le projet utilise la [Kotlin Toolchain](https://github.com/JetBrains/kotlin-tool
 ```bash
 ./kotlin build          # compile tout (kotlin.bat sous Windows)
 ./kotlin run            # lance le module app (jvm/app)
-./kotlin test           # (aucun test n'existe actuellement)
+./kotlin test           # tests de désérialisation (voir `components/test/`, `websocket/test/`)
 ./kotlin update         # met à jour les wrappers vers une version plus récente
 ```
 
-Particularité du layout Kotlin Toolchain : les sources sont **directement sous `<module>/src/`** — il n'y a pas de `src/main/kotlin`.
+Particularité du layout Kotlin Toolchain : les sources sont **directement sous `<module>/src/`** — il n'y a pas de `src/main/kotlin`. Les tests vont sous `<module>/test/` (auto-détecté, `kotlin-test` fourni par la toolchain — pas de dépendance de test à déclarer).
 
 ## Architecture des modules
 
@@ -49,21 +49,21 @@ app ──► core ──► components   (exported)
 
 ## Cartographie des fichiers
 
-### `core/src/` (package par défaut, sans déclaration de package)
+### `core/src/` (package `ktordiscord.core`)
 - `DiscordClient.kt` — point d'entrée de la lib. Configure le `HttpClient` avec **deux configs Json distinctes** : REST (`ignoreUnknownKeys`, `coerceInputValues`) et WebSocket (`explicitNulls=false`, `isLenient`, `encodeDefaults`). Expose deux `Channel` publics : `events` (`DispatchEvent`) et `interactions` (`Interaction`). `login(intents)` délègue à `DiscordWebSocketSession.connect`.
 - `httpRequests.kt` — **tous les appels REST**, écrits comme des fonctions d'extension `suspend fun DiscordClient.xxx(...): HttpResponse`.
 - `DiscordEndpoints.kt` — enum des segments d'URL (`applications`, `guilds`, `channels`…).
 - `InteractionManager.kt` — cache des commandes d'application (embryonnaire).
 - `Utils.kt` — `HttpRequestBuilder.buildDiscordHeader(token)` : ajoute le header `Authorization: Bot <token>`.
 
-### `websocket/src/` (packages `gateway` et `gateway.events`)
+### `websocket/src/` (packages `ktordiscord.gateway` et `ktordiscord.gateway.events`)
 - `DiscordWebSocketSession.kt` — cycle de vie complet de la connexion Gateway : boucle de connexion avec backoff aléatoire, heartbeat avec jitter initial, détection de connexion zombie (pas de ACK), **resume** (`sessionId` + `resumeGatewayUrl` capturés sur `ReadyEvent`), close codes fatals (`4004, 4010-4014`) et re-identify (`4009`). Route les `InteractionCreateEvent` vers le channel `interactions`, tout le reste vers `events`.
 - `gateway/OPCode.kt` — enum des opcodes Gateway, sérialisée par entier via `OPCodeSerializer`.
 - `gateway/DispatchEvents.kt` — enum des noms d'événements dispatch supportés (`READY`, `MESSAGE_CREATE`…). C'est la liste de référence : un nom reçu absent de cet enum fait échouer `valueOf`.
 - `gateway/events/Event.kt` — **cœur de la désérialisation Gateway**. `sealed class Event` avec un `EventSerializer` écrit à la main qui lit l'enveloppe `{op, t, s, d}` puis dispatch : `op == DISPATCH` → `decodeDispatchEvent` (switch sur `DispatchEvents`), sinon `decodeClassicEvent` (switch sur `OPCode`).
 - `gateway/events/*.kt` — un fichier par événement ou groupe d'événements (`MessageEvents.kt`, `ChannelEvents.kt`…). Les événements dispatch héritent de `DispatchEvent` (qui porte `sequenceId`, `@Transient`) ; les événements protocole (Hello, Heartbeat, Identify, Resume…) héritent directement de `Event`. Les événements **sortants** (`IdentifyEvent`, `ResumeEvent`, `HeartbeatEvent`) ont un sérialiseur custom qui écrit l'enveloppe `{op, d}`.
 
-### `components/src/` (packages `components`, `components.enums`, `components.interactions`, `builders`)
+### `components/src/` (packages `ktordiscord.components`, `ktordiscord.components.enums`, `ktordiscord.components.interactions`, `ktordiscord.components.serialization`, `ktordiscord.builders`)
 - `components/*.kt` — un modèle Discord par fichier (`Message.kt` contient aussi `Embed` et ses sous-objets), tous en `data class @Serializable` avec propriétés `var` nullables pour les champs optionnels.
 - `components/Snowflake.kt` — `value class Snowflake` (inline) avec sérialiseur custom, plus l'extension `String.snowflake`.
 - `components/enums/*.kt` — enums typés Discord, souvent sérialisés par entier.
@@ -111,7 +111,7 @@ app ──► core ──► components   (exported)
 
 > La dette technique détaillée et priorisée est tracée dans `IMPROVEMENTS.md` (cases à cocher). Consulter ce fichier avant d'entreprendre un refactor, et le mettre à jour quand un point est traité.
 
-- **Aucun test** dans le projet, pas de CI. Vérifier au minimum que `./kotlin build` passe.
+- **Tests de désérialisation seulement** (`components/test/`, `websocket/test/`), pas de CI. Vérifier au minimum que `./kotlin build` et `./kotlin test` passent.
 - `MessageUpdateEvent` (`MessageEvents.kt`) n'a pas l'annotation `@Serializable` (oubli probable).
 - Le désérialiseur de `InteractionTypes` fait `entries[decodeInt() - 1]` : correct uniquement parce que les ids sont contigus à partir de 1 — ne pas répliquer ce pattern, préférer `entries.first { it.id == ... }` comme dans `OPCodeSerializer`.
 - `DiscordClient` fait un `runBlocking` dans son `init` (récupération de l'applicationId) : la construction du client est bloquante et nécessite un token valide et du réseau.

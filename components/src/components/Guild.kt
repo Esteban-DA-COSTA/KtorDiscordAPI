@@ -1,4 +1,4 @@
-package components
+package ktordiscord.components
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -70,9 +70,9 @@ data class Guild(
     @SerialName("verification_level") val verificationLevel: Int,
     @SerialName("default_message_notifications") val defaultMessageNotifications: Int,
     @SerialName("explicit_content_filter") val explicitContentFilter: Int,
-    val roles: List<components.Role>,
-    val emojis: List<components.Emoji>,
-    val features: List<components.GuildFeatures>,
+    val roles: List<ktordiscord.components.Role>,
+    val emojis: List<ktordiscord.components.Emoji>,
+    val features: List<ktordiscord.components.GuildFeatures>,
     @SerialName("mfa_level") val mfaLevel: Int,
     @SerialName("application_id") val applicationId: Long? = null,
     @SerialName("system_channel_id") val systemChannelId: Long? = null,
@@ -92,12 +92,12 @@ data class Guild(
     @SerialName("approximate_member_count") val approximateMemberCount: Int? = null,
     @SerialName("approximate_presence_count") val approximatePresenceCount: Int? = null,
     @SerialName("safety_alerts_channel_id") val safetyAlertsChannelId: Long? = null,
-    @SerialName("welcome_screen") val welcomeScreen: components.WelcomeScreen? = null,
+    @SerialName("welcome_screen") val welcomeScreen: ktordiscord.components.WelcomeScreen? = null,
     @SerialName("nsfw_level") val nsfwLevel: Int,
     @SerialName("hub_type") val hubType: String? = null,
     @SerialName("latest_onboarding_question_id") val latestOnboardingQuestionId: Long? = null,
     val nsfw: Boolean = false,
-    val stickers: List<components.Sticker>,
+    val stickers: List<ktordiscord.components.Sticker>,
     @SerialName("incidents_data") val incidentsData: String? = null,
     @SerialName("premium_progress_bar_enabled") val premiumProgressBarEnabled: Boolean,
     @SerialName("embed_enabled") val embedEnabled: Boolean?,
@@ -108,7 +108,7 @@ data class Guild(
 @Serializable
 data class WelcomeScreen(
     val description: String? = null,
-    @SerialName("welcome_channels") val welcomeChannels: List<components.WelcomeScreenChannel>,
+    @SerialName("welcome_channels") val welcomeChannels: List<ktordiscord.components.WelcomeScreenChannel>,
 )
 
 @Serializable

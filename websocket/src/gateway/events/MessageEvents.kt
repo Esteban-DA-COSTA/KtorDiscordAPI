@@ -1,8 +1,8 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import components.Member
-import components.Message
-import components.User
+import ktordiscord.components.Member
+import ktordiscord.components.Message
+import ktordiscord.components.User
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

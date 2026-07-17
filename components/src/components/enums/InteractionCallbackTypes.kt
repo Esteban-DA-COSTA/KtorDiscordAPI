@@ -1,6 +1,6 @@
-package components.enums
+package ktordiscord.components.enums
 
-import components.serialization.IntEnumSerializer
+import ktordiscord.components.serialization.IntEnumSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable(InteractionCallbackTypes.InteractionsCallbackTypesSerializer::class)

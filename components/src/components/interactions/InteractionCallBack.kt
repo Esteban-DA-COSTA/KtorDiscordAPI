@@ -1,7 +1,7 @@
-package components.interactions
+package ktordiscord.components.interactions
 
-import components.MessagePayload
-import components.enums.InteractionCallbackTypes
+import ktordiscord.components.MessagePayload
+import ktordiscord.components.enums.InteractionCallbackTypes
 import kotlinx.serialization.Serializable
 
 @Serializable

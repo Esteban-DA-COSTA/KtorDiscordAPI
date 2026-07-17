@@ -1,8 +1,8 @@
-package components.interactions
+package ktordiscord.components.interactions
 
-import components.*
-import components.enums.ApplicationCommandTypes
-import components.enums.InteractionTypes
+import ktordiscord.components.*
+import ktordiscord.components.enums.ApplicationCommandTypes
+import ktordiscord.components.enums.InteractionTypes
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName

@@ -1,3 +1,5 @@
+package ktordiscord.core
+
 enum class DiscordEndpoints(val text: String) {
     APPLICATIONS("applications"),
     GUILDS("guilds"),

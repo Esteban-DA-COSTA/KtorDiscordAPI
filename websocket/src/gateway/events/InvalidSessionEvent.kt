@@ -1,3 +1,3 @@
-package gateway.events
+package ktordiscord.gateway.events
 
 data class InvalidSessionEvent(val resumable: Boolean) : Event()

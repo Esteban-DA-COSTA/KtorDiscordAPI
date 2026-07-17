@@ -1,13 +1,13 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import components.*
-import components.interactions.Interaction
-import components.interactions.InteractionData
-import gateway.DispatchEvents
-import gateway.DispatchEvents.*
-import gateway.OPCode
-import gateway.OPCode.DISPATCH
-import gateway.OPCode.HBACK
+import ktordiscord.components.*
+import ktordiscord.components.interactions.Interaction
+import ktordiscord.components.interactions.InteractionData
+import ktordiscord.gateway.DispatchEvents
+import ktordiscord.gateway.DispatchEvents.*
+import ktordiscord.gateway.OPCode
+import ktordiscord.gateway.OPCode.DISPATCH
+import ktordiscord.gateway.OPCode.HBACK
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

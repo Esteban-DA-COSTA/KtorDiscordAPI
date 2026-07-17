@@ -1,9 +1,9 @@
-package components.enums
+package ktordiscord.components.enums
 
-import components.serialization.IntEnumSerializer
+import ktordiscord.components.serialization.IntEnumSerializer
 import kotlinx.serialization.Serializable
 
-@Serializable(components.enums.InteractionTypes.Serializer::class)
+@Serializable(ktordiscord.components.enums.InteractionTypes.Serializer::class)
 enum class InteractionTypes(val id: Int) {
     PING(1),
     APPLICATION_COMMAND(2),

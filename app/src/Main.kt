@@ -1,10 +1,14 @@
-import builders.embed
-import components.Snowflake
-import components.enums.InteractionTypes
-import components.interactions.ApplicationCommandData
-import components.interactions.Interaction
-import components.snowflake
-import gateway.events.*
+package ktordiscord.app
+
+import ktordiscord.builders.embed
+import ktordiscord.core.DiscordClient
+import ktordiscord.core.createGlobalApplicationCommand
+import ktordiscord.components.Snowflake
+import ktordiscord.components.enums.InteractionTypes
+import ktordiscord.components.interactions.ApplicationCommandData
+import ktordiscord.components.interactions.Interaction
+import ktordiscord.components.snowflake
+import ktordiscord.gateway.events.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -67,7 +71,7 @@ suspend fun handleEmbedInteractionCommand(interaction: Interaction, discordClien
         discordClient.respondWithMessage(interaction) {
             embed {
                 title = "Embeded message"
-                content = stringToEmbed
+                description = stringToEmbed
             }
         }
     }

@@ -1,6 +1,6 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import components.interactions.Interaction
+import ktordiscord.components.interactions.Interaction
 import kotlinx.serialization.Serializable
 
 @Serializable

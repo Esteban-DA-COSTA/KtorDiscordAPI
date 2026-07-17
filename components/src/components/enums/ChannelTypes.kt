@@ -1,9 +1,9 @@
-package components.enums
+package ktordiscord.components.enums
 
-import components.serialization.IntEnumSerializer
+import ktordiscord.components.serialization.IntEnumSerializer
 import kotlinx.serialization.Serializable
 
-@Serializable(components.enums.ChannelTypes.Serializer::class)
+@Serializable(ktordiscord.components.enums.ChannelTypes.Serializer::class)
 enum class ChannelTypes(val id: Int) {
     GUILD_TEXT(0),
     DM(1),

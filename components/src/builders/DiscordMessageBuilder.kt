@@ -1,17 +1,17 @@
-package builders
+package ktordiscord.builders
 
-import components.*
+import ktordiscord.components.*
 import java.awt.Color
 
 @DslMarker
 annotation class DiscordMessageBuilder
 
-//#region Message builder
-@DiscordMessageBuilder
-fun MessagePayload.content(content: String) {
-    this.content = content
-}
+// Only builder functions that add value over direct `var` assignment are kept:
+// nested-object initializers and the java.awt.Color -> Int conversion. Every field
+// that was merely mirrored by a `xxx(value)` function is set directly in the lambda
+// (e.g. `embed { title = "..." }`).
 
+//#region Message builder
 @DiscordMessageBuilder
 fun MessagePayload.embed(init: Embed.() -> Unit) {
     if (this.embeds == null)
@@ -21,26 +21,7 @@ fun MessagePayload.embed(init: Embed.() -> Unit) {
 //#endregion
 
 //#region Embed builder
-@DiscordMessageBuilder
-fun Embed.title(title: String) {
-    this.title = title
-}
-
-@DiscordMessageBuilder
-fun Embed.type(type: components.enums.EmbedTypes) {
-    this.type = type
-}
-
-@DiscordMessageBuilder
-fun Embed.description(description: String) {
-    this.description = description
-}
-
-@DiscordMessageBuilder
-fun Embed.url(url: String) {
-    this.url = url
-}
-
+/** Set the embed color from a [java.awt.Color] (stored as its packed RGB Int). */
 @DiscordMessageBuilder
 fun Embed.color(color: Color) {
     this.color = color.rgb
@@ -77,67 +58,9 @@ fun Embed.author(init: EmbedAuthor.() -> Unit) {
 }
 
 @DiscordMessageBuilder
-fun Embed.field(init: components.EmbedField.() -> Unit) {
+fun Embed.field(init: EmbedField.() -> Unit) {
     if (this.fields == null)
         this.fields = mutableListOf()
-    this.fields!!.add(components.EmbedField().apply(init))
-}
-//#endregion
-
-//#region EmbedFooter builder
-@DiscordMessageBuilder
-fun EmbedFooter.text(text: String) {
-    this.text = text
-}
-
-@DiscordMessageBuilder
-fun EmbedFooter.iconUrl(url: String) {
-    this.iconUrl = url
-}
-//#endregion
-
-//#region EmbedImage builder
-@DiscordMessageBuilder
-fun EmbedImage.url(url: String) {
-    this.url = url
-}
-
-@DiscordMessageBuilder
-fun EmbedImage.height(height: Int) {
-    this.height = height
-}
-
-@DiscordMessageBuilder
-fun EmbedImage.width(width: Int) {
-    this.width = width
-}
-//#endregion
-
-//#region EmbedProvider builder
-@DiscordMessageBuilder
-fun EmbedProvider.name(name: String) {
-    this.name = name
-}
-
-@DiscordMessageBuilder
-fun EmbedProvider.url(url: String) {
-    this.url = url
-}
-//#endregion
-
-//#region EmbedAuthor builder
-@DiscordMessageBuilder
-fun EmbedAuthor.name(name: String) {
-    this.name = name
-}
-
-@DiscordMessageBuilder
-fun EmbedAuthor.url(url: String) {
-    this.url = url
-}
-
-@DiscordMessageBuilder
-fun EmbedAuthor.iconUrl(url: String) {
-    this.url = url
+    this.fields!!.add(EmbedField().apply(init))
 }
 //#endregion

@@ -1,4 +1,4 @@
-package components.interactions
+package ktordiscord.components.interactions
 
 interface DiscordCommand {
 }

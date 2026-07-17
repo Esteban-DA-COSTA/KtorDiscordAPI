@@ -1,4 +1,4 @@
-package components.enums
+package ktordiscord.components.enums
 
 import kotlinx.serialization.Serializable
 

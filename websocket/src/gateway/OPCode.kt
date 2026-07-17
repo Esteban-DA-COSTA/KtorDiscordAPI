@@ -1,6 +1,6 @@
-package gateway
+package ktordiscord.gateway
 
-import components.serialization.IntEnumSerializer
+import ktordiscord.components.serialization.IntEnumSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable(with = OPCodeSerializer::class)

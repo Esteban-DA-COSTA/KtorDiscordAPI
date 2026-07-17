@@ -1,6 +1,6 @@
-package components
+package ktordiscord.components
 
-import components.enums.EmbedTypes
+import ktordiscord.components.enums.EmbedTypes
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -11,16 +11,16 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Message(
-    val id: components.Snowflake? = null,
+    val id: ktordiscord.components.Snowflake? = null,
     @SerialName("channel_id")
     val channelId: String? = null,
-    val author: components.User? = null,
+    val author: ktordiscord.components.User? = null,
     val content: String? = null,
     val timestamp: String? = null,
     @SerialName("edited_timestamp")
     val editedTimestamp: String? = null,
     val tts: Boolean = false,
-    val embeds: List<components.Embed>? = null,
+    val embeds: List<ktordiscord.components.Embed>? = null,
 )
 
 /**
@@ -30,24 +30,24 @@ data class Message(
 data class MessagePayload(
     var content: String? = null,
     var tts: Boolean = false,
-    var embeds: MutableList<components.Embed>? = null,
+    var embeds: MutableList<ktordiscord.components.Embed>? = null,
 )
 
 @Serializable
 data class Embed(
     var title: String? = null,
-    var type: components.enums.EmbedTypes? = null,
+    var type: ktordiscord.components.enums.EmbedTypes? = null,
     var description: String? = null,
     var url: String? = null,
     var timestamps: String? = null,
     var color: Int? = null,
-    var footer: components.EmbedFooter? = null,
-    var image: components.EmbedImage? = null,
-    var thumbnail: components.EmbedImage? = null,
-    var video: components.EmbedImage? = null,
-    var provider: components.EmbedProvider? = null,
-    var author: components.EmbedAuthor? = null,
-    var fields: MutableList<components.EmbedField>? = null
+    var footer: ktordiscord.components.EmbedFooter? = null,
+    var image: ktordiscord.components.EmbedImage? = null,
+    var thumbnail: ktordiscord.components.EmbedImage? = null,
+    var video: ktordiscord.components.EmbedImage? = null,
+    var provider: ktordiscord.components.EmbedProvider? = null,
+    var author: ktordiscord.components.EmbedAuthor? = null,
+    var fields: MutableList<ktordiscord.components.EmbedField>? = null
 
 
 )
