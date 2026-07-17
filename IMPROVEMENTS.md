@@ -30,7 +30,7 @@ Dette technique et pistes d'amélioration relevées lors de l'audit du 2026-07-1
 
 - [ ] **10. Dégraisser le DSL `DiscordMessageBuilder.kt`.** Les fonctions type `Embed.title(title)` doublonnent les propriétés `var` assignables dans le lambda. Bug au passage : `EmbedAuthor.iconUrl(url)` assigne `this.url` au lieu de `this.iconUrl`. → Garder les propriétés ; ne conserver que les fonctions à valeur ajoutée (`embed { }`, `field { }`, `color(Color)`).
 
-- [ ] **11. Ajouter des tests unitaires de désérialisation.** `EventSerializer`, les enums et `Snowflake` sont des fonctions pures, testables sans réseau avec des payloads JSON réels de Discord. Verrouille les points 1 à 3. Rappel : le projet n'a actuellement **aucun test** (`./amper test`).
+- [ ] **11. Ajouter des tests unitaires de désérialisation.** `EventSerializer`, les enums et `Snowflake` sont des fonctions pures, testables sans réseau avec des payloads JSON réels de Discord. Verrouille les points 1 à 3. Rappel : le projet n'a actuellement **aucun test** (`./kotlin test`).
 
 ## Divers (déjà noté dans CLAUDE.md, rappelé ici)
 

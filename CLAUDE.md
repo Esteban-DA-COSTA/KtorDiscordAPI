@@ -13,17 +13,18 @@ Ce fichier guide Claude Code lorsqu'il travaille sur ce dépôt.
 
 L'API Discord ciblée est la **v10** (`DiscordClient.apiVersion`).
 
-## Build : Amper (pas Gradle)
+## Build : Kotlin Toolchain (pas Gradle)
 
-Le projet utilise [Amper](https://github.com/JetBrains/amper) de JetBrains. Il n'y a **aucun fichier Gradle** ; la configuration se fait via `project.yaml` (racine) et un `module.yaml` par module.
+Le projet utilise la [Kotlin Toolchain](https://github.com/JetBrains/kotlin-toolchain) de JetBrains (anciennement Amper). Il n'y a **aucun fichier Gradle** ; la configuration se fait via `project.yaml` (racine) et un `module.yaml` par module.
 
 ```bash
-./amper build          # compile tout (amper.bat sous Windows)
-./amper run            # lance le module app (jvm/app)
-./amper test           # (aucun test n'existe actuellement)
+./kotlin build          # compile tout (kotlin.bat sous Windows)
+./kotlin run            # lance le module app (jvm/app)
+./kotlin test           # (aucun test n'existe actuellement)
+./kotlin update         # met à jour les wrappers vers une version plus récente
 ```
 
-Particularité du layout Amper : les sources sont **directement sous `<module>/src/`** — il n'y a pas de `src/main/kotlin`.
+Particularité du layout Kotlin Toolchain : les sources sont **directement sous `<module>/src/`** — il n'y a pas de `src/main/kotlin`.
 
 ## Architecture des modules
 
@@ -110,7 +111,7 @@ app ──► core ──► components   (exported)
 
 > La dette technique détaillée et priorisée est tracée dans `IMPROVEMENTS.md` (cases à cocher). Consulter ce fichier avant d'entreprendre un refactor, et le mettre à jour quand un point est traité.
 
-- **Aucun test** dans le projet, pas de CI. Vérifier au minimum que `./amper build` passe.
+- **Aucun test** dans le projet, pas de CI. Vérifier au minimum que `./kotlin build` passe.
 - `MessageUpdateEvent` (`MessageEvents.kt`) n'a pas l'annotation `@Serializable` (oubli probable).
 - Le désérialiseur de `InteractionTypes` fait `entries[decodeInt() - 1]` : correct uniquement parce que les ids sont contigus à partir de 1 — ne pas répliquer ce pattern, préférer `entries.first { it.id == ... }` comme dans `OPCodeSerializer`.
 - `DiscordClient` fait un `runBlocking` dans son `init` (récupération de l'applicationId) : la construction du client est bloquante et nécessite un token valide et du réseau.
