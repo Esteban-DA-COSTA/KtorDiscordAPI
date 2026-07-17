@@ -4,11 +4,11 @@ Dette technique et pistes d'amélioration relevées lors de l'audit du 2026-07-1
 
 ## Priorité 1 — Robustesse face à l'API Discord
 
-- [ ] **1. Tolérance aux événements/opcodes inconnus.** `DispatchEvents.valueOf(eventName)` (`websocket/src/gateway/events/Event.kt`) lève une exception sur tout événement dispatch non listé (`GUILD_MEMBER_UPDATE`, `TYPING_START`…), `OPCodeSerializer` fait de même pour un opcode inconnu, et `InteractionData.Serializer` a un `TODO(type!!.name)` pour tous les types sauf `APPLICATION_COMMAND`. Chaque occurrence plante la boucle de session et force une reconnexion. → Introduire un fallback `UnknownEvent(name, data)` loggé en debug au lieu de lever. Meilleur ratio effort/bénéfice du projet.
+- [x] **1. Tolérance aux événements/opcodes inconnus.** `DispatchEvents.valueOf(eventName)` (`websocket/src/gateway/events/Event.kt`) lève une exception sur tout événement dispatch non listé (`GUILD_MEMBER_UPDATE`, `TYPING_START`…), `OPCodeSerializer` fait de même pour un opcode inconnu, et `InteractionData.Serializer` a un `TODO(type!!.name)` pour tous les types sauf `APPLICATION_COMMAND`. Chaque occurrence plante la boucle de session et force une reconnexion. → Introduire un fallback `UnknownEvent(name, data)` loggé en debug au lieu de lever. Meilleur ratio effort/bénéfice du projet.
 
-- [ ] **2. Sérialiseurs d'enums entiers : lookup par id + factorisation.** `InteractionTypes.Serializer` fait `entries[decodeInt() - 1]` (fragile, dépend de la contiguïté des ids). → Rechercher par id comme `OPCodeSerializer`, et factoriser le pattern copié-collé dans une classe de base réutilisable type `IntEnumSerializer` avec valeur `UNKNOWN` de repli (Discord ajoute régulièrement des valeurs).
+- [x] **2. Sérialiseurs d'enums entiers : lookup par id + factorisation.** `InteractionTypes.Serializer` fait `entries[decodeInt() - 1]` (fragile, dépend de la contiguïté des ids). → Rechercher par id comme `OPCodeSerializer`, et factoriser le pattern copié-collé dans une classe de base réutilisable type `IntEnumSerializer` avec valeur `UNKNOWN` de repli (Discord ajoute régulièrement des valeurs).
 
-- [ ] **3. Bugs de décodage `MESSAGE_CREATE`/`MESSAGE_UPDATE`** (`EventSerializer.decodeDispatchEvent`) :
+- [x] **3. Bugs de décodage `MESSAGE_CREATE`/`MESSAGE_UPDATE`** (`EventSerializer.decodeDispatchEvent`) :
   - `data.jsonObject["guild_id"]?.jsonPrimitive?.toString()` retourne la représentation JSON **avec guillemets** (`"\"123\""`) au lieu de la valeur → utiliser `.content`. Toute comparaison sur `guildId` est silencieusement fausse aujourd'hui.
   - `member!!` et `mentions!!` : NPE pour les messages hors guilde (DM) → rendre le décodage nullable.
 
@@ -34,4 +34,4 @@ Dette technique et pistes d'amélioration relevées lors de l'audit du 2026-07-1
 
 ## Divers (déjà noté dans CLAUDE.md, rappelé ici)
 
-- [ ] `MessageUpdateEvent` (`MessageEvents.kt`) n'a pas l'annotation `@Serializable`.
+- [x] `MessageUpdateEvent` (`MessageEvents.kt`) n'a pas l'annotation `@Serializable`.

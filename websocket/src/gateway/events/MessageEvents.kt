@@ -16,6 +16,7 @@ data class MessageCreateEvent(
     val mentions: List<User>?
 ) : DispatchEvent()
 
+@Serializable
 data class MessageUpdateEvent(
     override var sequenceId: Int,
     val message: Message,

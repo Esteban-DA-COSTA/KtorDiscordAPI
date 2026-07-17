@@ -70,7 +70,11 @@ private object EventSerializer : KSerializer<Event> {
         sequenceId: Int,
         data: JsonElement
     ): DispatchEvent {
-        val dispatchEvent = DispatchEvents.valueOf(eventName)
+        val dispatchEvent = DispatchEvents.entries.find { it.name == eventName }
+            ?: run {
+                logger.debug { "Unknown dispatch event: $eventName" }
+                return UnknownDispatchEvent(sequenceId, eventName, data)
+            }
         decoder as JsonDecoder
         logger.info { "DISPATCH: $dispatchEvent" }
         return when (dispatchEvent) {
@@ -79,19 +83,21 @@ private object EventSerializer : KSerializer<Event> {
 
             MESSAGE_CREATE -> {
                 val message = decoder.json.decodeFromJsonElement(Message.serializer(), data)
-                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.toString()
-                val member = decoder.json.decodeFromJsonElement(Member.serializer(), data.jsonObject["member"]!!)
-                val mentions =
-                    decoder.json.decodeFromJsonElement(ListSerializer(User.serializer()), data.jsonObject["mentions"]!!)
+                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content
+                val member = data.jsonObject["member"]
+                    ?.let { decoder.json.decodeFromJsonElement(Member.serializer(), it) }
+                val mentions = data.jsonObject["mentions"]
+                    ?.let { decoder.json.decodeFromJsonElement(ListSerializer(User.serializer()), it) }
                 MessageCreateEvent(sequenceId, message, guildId, member, mentions)
             }
 
             MESSAGE_UPDATE -> {
                 val message = decoder.json.decodeFromJsonElement(Message.serializer(), data)
-                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.toString()
-                val member = decoder.json.decodeFromJsonElement(Member.serializer(), data.jsonObject["member"]!!)
-                val mentions =
-                    decoder.json.decodeFromJsonElement(ListSerializer(User.serializer()), data.jsonObject["mentions"]!!)
+                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content
+                val member = data.jsonObject["member"]
+                    ?.let { decoder.json.decodeFromJsonElement(Member.serializer(), it) }
+                val mentions = data.jsonObject["mentions"]
+                    ?.let { decoder.json.decodeFromJsonElement(ListSerializer(User.serializer()), it) }
                 MessageUpdateEvent(sequenceId, message, guildId, member, mentions)
             }
 
@@ -148,8 +154,8 @@ private object EventSerializer : KSerializer<Event> {
             OPCode.HEARTBEAT -> HeartbeatEvent(0)
 
             else -> {
-                logger.warn { "Unhandled OPCode: $opCode" }
-                throw IllegalArgumentException("Unhandled OPCode: $opCode")
+                logger.debug { "Unhandled OPCode: $opCode" }
+                UnknownEvent(opCode, data)
             }
         }
     }
