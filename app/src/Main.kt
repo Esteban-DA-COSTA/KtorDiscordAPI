@@ -10,10 +10,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 fun main(): Unit = runBlocking {
-    val discordClient = DiscordClient("secret")
-        .also { it.login(33283) }
+    val discordClient = DiscordClient.create("secret")
+
+    // Subscribe before login(): the flows are hot, so a collector started after login could miss
+    // early events such as READY.
     launch {
-        for (event in discordClient.events) {
+        discordClient.events.collect { event ->
             when (event) {
                 is ReadyEvent -> {
                     println("Logged in")
@@ -36,7 +38,7 @@ fun main(): Unit = runBlocking {
         }
     }
     launch {
-        for (interaction in discordClient.interactions) {
+        discordClient.interactions.collect { interaction ->
             when (interaction.type) {
                 InteractionTypes.APPLICATION_COMMAND -> {
                     handleEmbedInteractionCommand(interaction, discordClient)
@@ -48,6 +50,8 @@ fun main(): Unit = runBlocking {
             }
         }
     }
+
+    discordClient.login(33283)
 
     val response = discordClient.createGlobalApplicationCommand("pingit") {
         description = "Send a embed ping message"

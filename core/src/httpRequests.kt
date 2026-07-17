@@ -1,11 +1,9 @@
-import components.Message
+import components.MessagePayload
 import components.RolePayload
 import components.Snowflake
 import components.enums.InteractionCallbackTypes
-import components.interactions.ApplicationCommand
-import components.interactions.ApplicationCommandData
+import components.interactions.ApplicationCommandPayload
 import components.interactions.InteractionCallBack
-import components.snowflake
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -35,7 +33,7 @@ private suspend fun DiscordClient.getGateway(): HttpResponse {
     }
 }
 
-suspend fun DiscordClient.createChannelMessage(channelId: String, message: Message): HttpResponse {
+suspend fun DiscordClient.createChannelMessage(channelId: String, message: MessagePayload): HttpResponse {
     return httpClient.post("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.MESSAGES.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -43,7 +41,7 @@ suspend fun DiscordClient.createChannelMessage(channelId: String, message: Messa
     }
 }
 
-suspend fun DiscordClient.createInteractionResponse(interactionId: String, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: Message): HttpResponse {
+suspend fun DiscordClient.createInteractionResponse(interactionId: String, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: MessagePayload): HttpResponse {
     val interactionCallBack = InteractionCallBack(interactionCallBackType, message)
     return httpClient.post("$discordURL/interactions/$interactionId/$interactionToken/callback") {
         buildDiscordHeader(token)
@@ -90,9 +88,9 @@ suspend fun DiscordClient.getRoles(guildId: String): HttpResponse {
     }
 }
 
-suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: ApplicationCommand.() -> Unit): HttpResponse {
+suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: ApplicationCommandPayload.() -> Unit): HttpResponse {
     val appId = this.applicationId
-    val appCommand = ApplicationCommand(id = Snowflake("-1"), applicationId = Snowflake(appId), name = name, description = "").apply(init)
+    val appCommand = ApplicationCommandPayload(name = name).apply(init)
     return httpClient.post("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$appId/${DiscordEndpoints.COMMANDS.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)

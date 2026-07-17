@@ -8,12 +8,12 @@ annotation class DiscordMessageBuilder
 
 //#region Message builder
 @DiscordMessageBuilder
-fun Message.content(content: String) {
+fun MessagePayload.content(content: String) {
     this.content = content
 }
 
 @DiscordMessageBuilder
-fun Message.embed(init: Embed.() -> Unit) {
+fun MessagePayload.embed(init: Embed.() -> Unit) {
     if (this.embeds == null)
         this.embeds = mutableListOf()
     this.embeds!!.add(Embed().apply(init))

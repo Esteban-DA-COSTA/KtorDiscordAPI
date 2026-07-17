@@ -7,13 +7,14 @@ import io.ktor.http.*
 import io.ktor.serialization.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlin.random.Random
 
 class DiscordWebSocketSession(
     private val httpClient: HttpClient,
-    private val channelEvents: Channel<DispatchEvent>,
-    private val channelInteraction: Channel<Interaction>,
+    private val scope: CoroutineScope,
+    private val channelEvents: MutableSharedFlow<DispatchEvent>,
+    private val channelInteraction: MutableSharedFlow<Interaction>,
     private val token: String
 ) {
     private val wssLogger = KotlinLogging.logger("WSS_LOGGER")
@@ -45,7 +46,7 @@ class DiscordWebSocketSession(
      *
      * @param intents the discord intents identification number.
      */
-    fun connect(intents: Int) = CoroutineScope(Dispatchers.Default).launch {
+    fun connect(intents: Int) = scope.launch {
         this@DiscordWebSocketSession.intents = intents
         var resuming = false
 
@@ -66,6 +67,8 @@ class DiscordWebSocketSession(
 
                 handleSession(resuming)
 
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 wssLogger.error { "WebSocket error: ${e.message}" }
             }
@@ -142,7 +145,7 @@ class DiscordWebSocketSession(
         }
 
         heartbeatJob?.cancel()
-        heartbeatJob = CoroutineScope(Dispatchers.Default).launch { heartbeatLoop() }
+        heartbeatJob = scope.launch { heartbeatLoop() }
     }
 
     /**
@@ -158,9 +161,9 @@ class DiscordWebSocketSession(
         }
 
         if (event is InteractionCreateEvent) {
-            channelInteraction.send(event.interaction)
+            channelInteraction.emit(event.interaction)
         } else {
-            channelEvents.send(event)
+            channelEvents.emit(event)
         }
     }
 
