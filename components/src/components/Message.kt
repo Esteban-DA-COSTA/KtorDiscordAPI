@@ -4,13 +4,33 @@ import components.enums.EmbedTypes
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * A message **received** from Discord (e.g. via `MESSAGE_CREATE`). Immutable.
+ *
+ * To *send* a message, use [MessagePayload] (the target of the `sendMessage { }` DSL).
+ */
 @Serializable
 data class Message(
+    val id: components.Snowflake? = null,
+    @SerialName("channel_id")
+    val channelId: String? = null,
+    val author: components.User? = null,
+    val content: String? = null,
+    val timestamp: String? = null,
+    @SerialName("edited_timestamp")
+    val editedTimestamp: String? = null,
+    val tts: Boolean = false,
+    val embeds: List<components.Embed>? = null,
+)
+
+/**
+ * Payload used to **send** a message to Discord. Mutable so the `sendMessage { }` DSL can fill it in.
+ */
+@Serializable
+data class MessagePayload(
     var content: String? = null,
     var tts: Boolean = false,
     var embeds: MutableList<components.Embed>? = null,
-    @SerialName("channel_id")
-    val channelId: String? = null,
 )
 
 @Serializable
