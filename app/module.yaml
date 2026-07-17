@@ -1,4 +1,3 @@
-product:
-  type: jvm/app
+product: jvm/app
 dependencies:
   - ../core
