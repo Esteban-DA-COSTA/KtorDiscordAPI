@@ -1,9 +1,12 @@
-import components.MessagePayload
-import components.enums.InteractionCallbackTypes
-import components.enums.InteractionTypes
-import components.interactions.ApplicationCommand
-import components.interactions.Interaction
-import gateway.events.DispatchEvent
+package ktordiscord.core
+
+import ktordiscord.components.MessagePayload
+import ktordiscord.components.enums.InteractionCallbackTypes
+import ktordiscord.components.enums.InteractionTypes
+import ktordiscord.components.interactions.ApplicationCommand
+import ktordiscord.components.interactions.Interaction
+import ktordiscord.gateway.DiscordWebSocketSession
+import ktordiscord.gateway.events.DispatchEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.call.*

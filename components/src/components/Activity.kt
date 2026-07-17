@@ -1,4 +1,4 @@
-package components
+package ktordiscord.components
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,17 +9,17 @@ data class Activity(
     val type: Int,
     val url: String?,
     @SerialName("created_at") val createdAt: Int,
-    val timestamps: components.ActivityTimeStamp?,
+    val timestamps: ktordiscord.components.ActivityTimeStamp?,
     @SerialName("application_id") val applicationId: Long,
     val details: String?,
     val state: String?,
-    val emoji: components.ActivityEmoji?,
-    val party: components.ActivityParty?,
-    val assets: components.ActivityAssets?,
-    val secrets: components.ActivitySecret?,
+    val emoji: ktordiscord.components.ActivityEmoji?,
+    val party: ktordiscord.components.ActivityParty?,
+    val assets: ktordiscord.components.ActivityAssets?,
+    val secrets: ktordiscord.components.ActivitySecret?,
     val instance: Boolean?,
     val flags: Int?,
-    val buttons: components.ActivityButton?
+    val buttons: ktordiscord.components.ActivityButton?
 )
 
 @Serializable

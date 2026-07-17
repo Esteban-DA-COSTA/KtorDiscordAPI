@@ -1,9 +1,9 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import components.Activity
-import components.ClientStatus
-import components.User
-import components.enums.StatusTypeEnum
+import ktordiscord.components.Activity
+import ktordiscord.components.ClientStatus
+import ktordiscord.components.User
+import ktordiscord.components.enums.StatusTypeEnum
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

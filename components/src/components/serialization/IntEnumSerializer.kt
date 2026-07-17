@@ -1,4 +1,4 @@
-package components.serialization
+package ktordiscord.components.serialization
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi

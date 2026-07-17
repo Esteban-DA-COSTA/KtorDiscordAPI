@@ -1,6 +1,6 @@
-package components.interactions
+package ktordiscord.components.interactions
 
-import components.*
+import ktordiscord.components.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -9,7 +9,7 @@ import kotlinx.serialization.Transient
 data class Interaction(
     val id: Snowflake,
     @SerialName("application_id") val applicationId: Snowflake,
-    val type: components.enums.InteractionTypes?,
+    val type: ktordiscord.components.enums.InteractionTypes?,
     @Transient var data: InteractionData? = null,
     @SerialName("guild_id") val guildId: Snowflake?,
     val channel: Channel?,
@@ -24,5 +24,5 @@ data class Interaction(
     @SerialName("guild_locale") val guildLocale: String?,
     val entitlements: List<Entitlement>?,
     @SerialName("authorizing_integration_owners") val authorizingIntegrationOwners: Map<String, String>?,
-    val context: components.enums.InteractionContextTypes?,
+    val context: ktordiscord.components.enums.InteractionContextTypes?,
 )

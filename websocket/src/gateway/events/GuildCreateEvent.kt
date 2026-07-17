@@ -1,6 +1,6 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import components.Guild
+import ktordiscord.components.Guild
 
 data class GuildCreateEvent(
     override var sequenceId: Int,

@@ -1,10 +1,10 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import gateway.OPCode
+import ktordiscord.gateway.OPCode
 import kotlinx.serialization.json.JsonElement
 
 /**
- * Fallback for a dispatch event whose name is not (yet) listed in [gateway.DispatchEvents].
+ * Fallback for a dispatch event whose name is not (yet) listed in [ktordiscord.gateway.DispatchEvents].
  *
  * Kept as a [DispatchEvent] so its sequence id is still tracked for resume and it is
  * forwarded to the events channel; consumers can inspect [name]/[data] or ignore it.

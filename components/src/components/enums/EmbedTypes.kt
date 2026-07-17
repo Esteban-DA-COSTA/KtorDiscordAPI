@@ -1,4 +1,4 @@
-package components.enums
+package ktordiscord.components.enums
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
@@ -10,7 +10,7 @@ import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-@Serializable(components.enums.EmbedTypes.Serializer::class)
+@Serializable(ktordiscord.components.enums.EmbedTypes.Serializer::class)
 enum class EmbedTypes {
     RICH,
     IMAGE,
@@ -19,12 +19,12 @@ enum class EmbedTypes {
     ARTICLE,
     LINK;
 
-    companion object Serializer : KSerializer<components.enums.EmbedTypes> {
+    companion object Serializer : KSerializer<ktordiscord.components.enums.EmbedTypes> {
         @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
         override val descriptor: SerialDescriptor
             get() = buildSerialDescriptor("type", PrimitiveKind.STRING)
 
-        override fun deserialize(decoder: Decoder) = components.enums.EmbedTypes.valueOf(decoder.decodeString().uppercase())
-        override fun serialize(encoder: Encoder, value: components.enums.EmbedTypes) = encoder.encodeString(value.name.lowercase())
+        override fun deserialize(decoder: Decoder) = ktordiscord.components.enums.EmbedTypes.valueOf(decoder.decodeString().uppercase())
+        override fun serialize(encoder: Encoder, value: ktordiscord.components.enums.EmbedTypes) = encoder.encodeString(value.name.lowercase())
     }
 }

@@ -1,5 +1,7 @@
-import components.enums.InteractionTypes
-import components.interactions.ApplicationCommand
+package ktordiscord.core
+
+import ktordiscord.components.enums.InteractionTypes
+import ktordiscord.components.interactions.ApplicationCommand
 import io.ktor.client.call.*
 
 class InteractionManager private constructor(private val client: DiscordClient) {

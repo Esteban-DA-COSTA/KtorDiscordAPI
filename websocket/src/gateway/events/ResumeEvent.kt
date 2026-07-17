@@ -1,6 +1,6 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import gateway.OPCode
+import ktordiscord.gateway.OPCode
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

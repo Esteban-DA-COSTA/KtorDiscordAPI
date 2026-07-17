@@ -1,4 +1,4 @@
-package components
+package ktordiscord.components
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,7 +16,7 @@ data class Role(
     val permissions: String,
     val managed: Boolean,
     val mentionable: Boolean,
-    val tags: components.RoleTag? = null,
+    val tags: ktordiscord.components.RoleTag? = null,
     val flags: Int = 0
 )
 

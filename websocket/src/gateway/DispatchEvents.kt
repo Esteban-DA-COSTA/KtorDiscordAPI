@@ -1,4 +1,4 @@
-package gateway
+package ktordiscord.gateway
 
 enum class DispatchEvents {
     READY,

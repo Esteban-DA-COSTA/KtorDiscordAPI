@@ -1,5 +1,7 @@
-import components.interactions.Interaction
-import gateway.events.*
+package ktordiscord.gateway
+
+import ktordiscord.components.interactions.Interaction
+import ktordiscord.gateway.events.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.plugins.websocket.*

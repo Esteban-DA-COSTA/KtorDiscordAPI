@@ -1,9 +1,11 @@
-import components.MessagePayload
-import components.RolePayload
-import components.Snowflake
-import components.enums.InteractionCallbackTypes
-import components.interactions.ApplicationCommandPayload
-import components.interactions.InteractionCallBack
+package ktordiscord.core
+
+import ktordiscord.components.MessagePayload
+import ktordiscord.components.RolePayload
+import ktordiscord.components.Snowflake
+import ktordiscord.components.enums.InteractionCallbackTypes
+import ktordiscord.components.interactions.ApplicationCommandPayload
+import ktordiscord.components.interactions.InteractionCallBack
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*

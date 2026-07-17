@@ -1,4 +1,4 @@
-package gateway.events
+package ktordiscord.gateway.events
 
 import kotlinx.serialization.Transient
 

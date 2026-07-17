@@ -1,8 +1,8 @@
-package components.interactions
+package ktordiscord.components.interactions
 
-import components.Snowflake
-import components.enums.ApplicationCommandTypes
-import components.enums.InteractionContextTypes
+import ktordiscord.components.Snowflake
+import ktordiscord.components.enums.ApplicationCommandTypes
+import ktordiscord.components.enums.InteractionContextTypes
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

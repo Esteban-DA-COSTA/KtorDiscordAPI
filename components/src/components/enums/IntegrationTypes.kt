@@ -1,9 +1,9 @@
-package components.enums
+package ktordiscord.components.enums
 
-import components.serialization.IntEnumSerializer
+import ktordiscord.components.serialization.IntEnumSerializer
 import kotlinx.serialization.Serializable
 
-@Serializable(components.enums.IntegrationTypes.Serializer::class)
+@Serializable(ktordiscord.components.enums.IntegrationTypes.Serializer::class)
 enum class IntegrationTypes(val id: Int) {
     GUILD_INSTALL(0),
     USER_INSTALL(1),

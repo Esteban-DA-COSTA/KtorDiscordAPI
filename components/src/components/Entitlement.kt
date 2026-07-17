@@ -1,17 +1,17 @@
-package components
+package ktordiscord.components
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Entitlement(
-    val id: components.Snowflake,
+    val id: ktordiscord.components.Snowflake,
     @SerialName("sku_id")
-    val skuId: components.Snowflake,
+    val skuId: ktordiscord.components.Snowflake,
     @SerialName("application_id")
-    val applicationId: components.Snowflake,
+    val applicationId: ktordiscord.components.Snowflake,
     @SerialName("user_id")
-    val userId: components.Snowflake?,
+    val userId: ktordiscord.components.Snowflake?,
     val type: Int,
     val deleted: Boolean,
     @SerialName("starts_at")
@@ -19,5 +19,5 @@ data class Entitlement(
     @SerialName("ends_at")
     val endsAt: String?,
     @SerialName("guild_id")
-    val guildId: components.Snowflake?
+    val guildId: ktordiscord.components.Snowflake?
 )

@@ -1,8 +1,8 @@
-package gateway.events
+package ktordiscord.gateway.events
 
-import components.enums.ChannelTypes
-import components.enums.InteractionTypes
-import gateway.OPCode
+import ktordiscord.components.enums.ChannelTypes
+import ktordiscord.components.enums.InteractionTypes
+import ktordiscord.gateway.OPCode
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
