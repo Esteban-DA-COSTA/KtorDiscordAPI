@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "youtrack": {
+      "type": "http",
+      "url": "https://estebandcprojects.youtrack.cloud/mcp",
+      "headers": {
+        "Authorization": "Bearer ${YOUTRACK_TOKEN}"
+      }
+    }
+  }
+}
