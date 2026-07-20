@@ -42,6 +42,15 @@ Système `discordClient.on("cmd") { respond { button(...).click { } } }` : route
 - [ ] **Pas de bloc `define { }`.** L'ergonomie `respond { }` a été retenue pour permettre plus tard un bloc `define { }` créant l'`ApplicationCommand` dans la même lambda `on`. À implémenter.
 - [ ] **Sérialiseur `MessageComponent` write-only.** `deserialize` lève une erreur (on n'émet que des composants). À compléter si un jour on doit décoder des composants entrants complets.
 
+## Routeur d'events Gateway (v1 livrée)
+
+`discordClient.on<MessageCreateEvent> { reply { } }` : routeur réifié event→handler(s), multi-listeners, boucle de dispatch interne symétrique de celle des interactions, scope `EventScope<T>` avec `reply { }` réutilisant `ResponseScope` (boutons `.click` gratuits sur un message d'event). Voir `core/src/events/EventScope.kt`, `core/src/DiscordClient.kt`. Dette résiduelle :
+
+- [ ] **Handlers d'events en mémoire.** `eventHandlers` (classe d'event → handlers) vit dans `DiscordClient` : perdu au redémarrage. Pas de désenregistrement (`off`).
+- [ ] **Match par classe exacte.** Le routage matche `event::class` exactement : pas de handler « catch-all » (sur `DispatchEvent`) ni de dispatch par hiérarchie. À étendre si besoin.
+- [ ] **`reply` limité aux events porteurs d'un channel.** Fourni pour `MessageCreateEvent`/`MessageUpdateEvent` (extensions typées, `@JvmName` pour l'erasure). Les autres events accèdent au client via `event` + les fonctions REST existantes.
+- [ ] **Multi-handlers non ordonnancés.** Chaque handler d'un même type tourne dans son propre coroutine : pas de garantie d'ordre ni de « stop propagation ».
+
 ## Divers (déjà noté dans CLAUDE.md, rappelé ici)
 
 - [x] `MessageUpdateEvent` (`MessageEvents.kt`) n'a pas l'annotation `@Serializable`.

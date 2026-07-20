@@ -5,39 +5,27 @@ import ktordiscord.components.enums.ButtonStyle
 import ktordiscord.core.DiscordClient
 import ktordiscord.core.InteractionKind
 import ktordiscord.core.createGlobalApplicationCommand
+import ktordiscord.core.reply
 import ktordiscord.gateway.events.*
 import io.ktor.client.statement.*
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 fun main(): Unit = runBlocking {
     val discordClient = DiscordClient.create("secret")
 
-    // Classic events. Subscribe before login(): the flows are hot, so a collector started after
-    // login could miss early events such as READY.
-    launch {
-        discordClient.events.collect { event ->
-            when (event) {
-                is ReadyEvent -> println("Logged in")
+    // Event routing: one handler per event type, registered by reified type. The dispatch loop
+    // starts at construction, so registering before login() misses no early event (READY included).
+    discordClient.on<ReadyEvent> { println("Logged in") }
 
-                is MessageCreateEvent -> {
-                    val messageContent = event.message.content
-                    val messageOriginChannel = event.message.channelId!!
-                    when (messageContent) {
-                        "ping" -> discordClient.sendMessage(messageOriginChannel) {
-                            content = "pong!"
-                        }
+    discordClient.on<MessageCreateEvent> {
+        when (event.message.content) {
+            "ping" -> reply { content = "pong!" }
 
-                        // Un bouton sur un message classique (hors interaction). Son custom_id stable
-                        // "refresh" est géré par le handler top-level enregistré plus bas.
-                        "menu" -> discordClient.sendMessage(messageOriginChannel) {
-                            content = "Menu :"
-                            button("Rafraîchir", customId = "refresh") { style = ButtonStyle.SECONDARY }
-                        }
-                    }
-                }
-
-                else -> println("Received an event that I don't know how to handle: ${event::class.simpleName}")
+            // Un bouton sur un message classique (hors interaction). Son custom_id stable
+            // "refresh" est géré par le handler top-level enregistré plus bas.
+            "menu" -> reply {
+                content = "Menu :"
+                button("Rafraîchir", customId = "refresh") { style = ButtonStyle.SECONDARY }
             }
         }
     }

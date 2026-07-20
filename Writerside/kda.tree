@@ -6,6 +6,7 @@ start-page="Home.topic">
     <toc-element topic="Home.topic"/>
     <toc-element topic="Basic_usage.md"/>
     <toc-element topic="Interactions.md"/>
+    <toc-element topic="Events.md"/>
     <toc-element toc-title="Modules">
         <toc-element topic="Core_module.md"/>
     </toc-element>

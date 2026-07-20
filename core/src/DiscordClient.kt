@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
+import kotlin.reflect.KClass
 
 /**
  * Discord client.
@@ -91,13 +92,26 @@ class DiscordClient private constructor(internal val token: String) {
     private val commandHandlers = mutableMapOf<String, CommandHandler>()
     private val componentHandlers = mutableMapOf<String, ComponentHandler>()
 
-    // Internal dispatch loop: routes every incoming interaction to its registered handler.
-    // Each interaction runs in its own child coroutine so a slow handler never blocks the others.
-    // Reads the public `interactions` SharedFlow, so a consumer can still collect it in parallel.
+    // Event routing registry: event class -> handlers registered for it (multiple listeners allowed,
+    // invoked in registration order). Keyed by the concrete DispatchEvent subclass (all are leaf
+    // data classes), so `event::class` matches exactly what `on<T>()` registered under T::class.
+    private val eventHandlers = mutableMapOf<KClass<out DispatchEvent>, MutableList<suspend EventScope<DispatchEvent>.() -> Unit>>()
+
+    // Internal dispatch loops: route every incoming interaction / event to its registered handler(s).
+    // Each is run in its own child coroutine so a slow handler never blocks the others.
+    // They read the public `interactions` / `events` SharedFlows, so a consumer can still collect
+    // them in parallel.
     init {
         scope.launch {
             interactions.collect { interaction ->
                 scope.launch { dispatchInteraction(interaction) }
+            }
+        }
+        scope.launch {
+            events.collect { event ->
+                eventHandlers[event::class]?.forEach { handler ->
+                    scope.launch { EventScope(event, this@DiscordClient).handler() }
+                }
             }
         }
     }
@@ -220,6 +234,36 @@ class DiscordClient private constructor(internal val token: String) {
      * ```
      */
     fun on(commandName: String, handler: CommandHandler) = on(InteractionKind.Command, commandName, handler)
+
+    /**
+     * Register a [handler] run for every Gateway event of type [T] (e.g. `MessageCreateEvent`).
+     * Several handlers may be registered for the same type; they run concurrently, each in its own
+     * coroutine. The handler receives an [EventScope] exposing the incoming `event` and, for events
+     * that support it, reply verbs (see `EventScope.reply`).
+     *
+     * Register handlers **before** [login]: the dispatch loop starts at construction, so no early
+     * event is missed once the Gateway connects.
+     *
+     * ```
+     * client.on<ReadyEvent> { println("connected") }
+     * client.on<MessageCreateEvent> { if (event.message.content == "ping") reply { content = "pong" } }
+     * ```
+     */
+    inline fun <reified T : DispatchEvent> on(noinline handler: suspend EventScope<T>.() -> Unit) {
+        @Suppress("UNCHECKED_CAST")
+        registerEventHandler(T::class, handler as suspend EventScope<DispatchEvent>.() -> Unit)
+    }
+
+    // Called by the reified `on<T>()` to store an event handler. The cast in `on` is safe because a
+    // handler is only ever invoked with an event of the class it was registered under (see the
+    // `events.collect` dispatch loop). `@PublishedApi internal` so the public inline `on` can reach it.
+    @PublishedApi
+    internal fun registerEventHandler(
+        type: KClass<out DispatchEvent>,
+        handler: suspend EventScope<DispatchEvent>.() -> Unit,
+    ) {
+        eventHandlers.getOrPut(type) { mutableListOf() }.add(handler)
+    }
 
     // Called by InteractionKind.Command.register to bind a command handler to its name.
     internal fun registerCommandHandler(commandName: String, handler: CommandHandler) {
