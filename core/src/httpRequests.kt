@@ -43,12 +43,25 @@ suspend fun DiscordClient.createChannelMessage(channelId: String, message: Messa
     }
 }
 
-suspend fun DiscordClient.createInteractionResponse(interactionId: String, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: MessagePayload): HttpResponse {
+suspend fun DiscordClient.createInteractionResponse(interactionId: String, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: MessagePayload? = null): HttpResponse {
     val interactionCallBack = InteractionCallBack(interactionCallBackType, message)
     return httpClient.post("$discordURL/interactions/$interactionId/$interactionToken/callback") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
         setBody(interactionCallBack)
+    }
+}
+
+/**
+ * Edit the initial ("@original") response of an interaction — used after a deferred response to fill
+ * in the actual message. Targets the interaction webhook, so it takes the application id and the
+ * interaction token (not the interaction id).
+ */
+suspend fun DiscordClient.editOriginalInteractionResponse(applicationId: String, interactionToken: String, message: MessagePayload): HttpResponse {
+    return httpClient.patch("$discordURL/webhooks/$applicationId/$interactionToken/messages/@original") {
+        buildDiscordHeader(token)
+        contentType(ContentType.Application.Json)
+        setBody(message)
     }
 }
 

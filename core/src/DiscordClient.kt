@@ -4,10 +4,14 @@ import ktordiscord.components.MessagePayload
 import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.enums.InteractionTypes
 import ktordiscord.components.interactions.ApplicationCommand
+import ktordiscord.components.interactions.ApplicationCommandData
 import ktordiscord.components.interactions.Interaction
+import ktordiscord.components.interactions.MessageComponentData
 import ktordiscord.gateway.DiscordWebSocketSession
 import ktordiscord.gateway.events.DispatchEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -36,6 +40,7 @@ import kotlinx.serialization.json.Json
  */
 class DiscordClient private constructor(internal val token: String) {
     private val httpClientLogger = KotlinLogging.logger("HTTP_LOGGER")
+    internal val interactionLogger = KotlinLogging.logger("INTERACTION_LOGGER")
 
     // Scope owning every coroutine spawned by this client (Gateway loop, heartbeat…).
     // Cancelled by [close] for a clean shutdown.
@@ -82,6 +87,21 @@ class DiscordClient private constructor(internal val token: String) {
     // the web socket session used to receive/send Gateway intents
     private val wssSession = DiscordWebSocketSession(httpClient, scope, _events, _interactions, token)
 
+    // Interaction routing registries: application command name -> handler, component custom_id -> handler.
+    private val commandHandlers = mutableMapOf<String, CommandHandler>()
+    private val componentHandlers = mutableMapOf<String, ComponentHandler>()
+
+    // Internal dispatch loop: routes every incoming interaction to its registered handler.
+    // Each interaction runs in its own child coroutine so a slow handler never blocks the others.
+    // Reads the public `interactions` SharedFlow, so a consumer can still collect it in parallel.
+    init {
+        scope.launch {
+            interactions.collect { interaction ->
+                scope.launch { dispatchInteraction(interaction) }
+            }
+        }
+    }
+
     internal var apiVersion = 10
     internal var discordURL = "https://discord.com/api/v$apiVersion"
 
@@ -107,16 +127,19 @@ class DiscordClient private constructor(internal val token: String) {
 
     //#region HTTP Calls
     /**
-     * Send a message to a specific discord channel
+     * Send a message to a specific discord channel.
+     *
+     * Uses the same [ResponseScope] as interaction replies, so a plain channel message can carry
+     * buttons whose click callback is bound inline with `button(...).click { }` — the callback is
+     * routed by its `custom_id` like any component interaction, no command handler required.
      *
      * @param channelId the channel id to send a message
      * @param init the message builder function
      * @return the Http response from discord
      */
-    suspend fun sendMessage(channelId: String, init: (MessagePayload.() -> Unit)): HttpResponse {
-        val message = MessagePayload().apply(init)
+    suspend fun sendMessage(channelId: String, init: ResponseScope.() -> Unit): HttpResponse {
+        val message = ResponseScope(this).apply(init).build()
         return createChannelMessage(channelId, message)
-
     }
 
     /**
@@ -155,6 +178,77 @@ class DiscordClient private constructor(internal val token: String) {
     fun close() {
         scope.cancel()
         httpClient.close()
+    }
+
+    //#endregion
+
+    //#region Interaction routing
+
+    /**
+     * Register a [handler] for an interaction, keyed by [id]. The [kind] selects both the registry
+     * and — via a typed key — the handler's receiver scope:
+     *
+     * - [InteractionKind.Command] : [id] is an application command **name**; receiver is
+     *   [CommandInteractionScope] (`respond` / `defer` / `editOriginal`).
+     * - [InteractionKind.Component] : [id] is a component **`custom_id`**; receiver is
+     *   [ComponentInteractionScope] (`respond` / `update` / `defer` / `editOriginal`).
+     *
+     * Registering the same (kind, id) again replaces the previous handler. This is how you react to
+     * a component **without** a surrounding command handler (e.g. a persistent button with a stable
+     * `custom_id`).
+     *
+     * ```
+     * client.on(InteractionKind.Command, "ping") { respond { content = "pong" } }
+     * client.on(InteractionKind.Component, "menu-refresh") { update { content = "refreshed" } }
+     * ```
+     */
+    fun <S : InteractionScope> on(kind: InteractionKind<S>, id: String, handler: suspend S.() -> Unit) {
+        kind.register(this, id, handler)
+    }
+
+    /**
+     * Shorthand for [on] with [InteractionKind.Command]: register the [handler] run when the
+     * application command named [commandName] is invoked.
+     *
+     * ```
+     * client.on("ping") {
+     *     respond {
+     *         content = "pong"
+     *         button("again") { style = ButtonStyle.PRIMARY }.click { respond { content = "pong" } }
+     *     }
+     * }
+     * ```
+     */
+    fun on(commandName: String, handler: CommandHandler) = on(InteractionKind.Command, commandName, handler)
+
+    // Called by InteractionKind.Command.register to bind a command handler to its name.
+    internal fun registerCommandHandler(commandName: String, handler: CommandHandler) {
+        commandHandlers[commandName] = handler
+    }
+
+    // Called by ButtonHandle.click / InteractionKind.Component.register to bind a component callback.
+    internal fun registerComponentHandler(customId: String, handler: ComponentHandler) {
+        componentHandlers[customId] = handler
+    }
+
+    private suspend fun dispatchInteraction(interaction: Interaction) {
+        when (val data = interaction.data) {
+            is ApplicationCommandData -> {
+                val handler = commandHandlers[data.name]
+                if (handler != null) handler(CommandInteractionScope(interaction, this))
+                else interactionLogger.debug { "No handler registered for command '${data.name}'" }
+            }
+
+            is MessageComponentData -> {
+                val handler = componentHandlers[data.customId]
+                if (handler != null) handler(ComponentInteractionScope(interaction, this))
+                else interactionLogger.debug { "No handler registered for component '${data.customId}'" }
+            }
+
+            else -> interactionLogger.debug {
+                "Unhandled interaction (type=${interaction.type}, data=${data?.let { it::class.simpleName }})"
+            }
+        }
     }
 
     //#endregion
