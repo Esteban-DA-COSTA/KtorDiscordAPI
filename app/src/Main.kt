@@ -1,13 +1,10 @@
 package ktordiscord.app
 
 import ktordiscord.builders.embed
+import ktordiscord.components.enums.ButtonStyle
 import ktordiscord.core.DiscordClient
+import ktordiscord.core.InteractionKind
 import ktordiscord.core.createGlobalApplicationCommand
-import ktordiscord.components.Snowflake
-import ktordiscord.components.enums.InteractionTypes
-import ktordiscord.components.interactions.ApplicationCommandData
-import ktordiscord.components.interactions.Interaction
-import ktordiscord.components.snowflake
 import ktordiscord.gateway.events.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.launch
@@ -16,14 +13,12 @@ import kotlinx.coroutines.runBlocking
 fun main(): Unit = runBlocking {
     val discordClient = DiscordClient.create("secret")
 
-    // Subscribe before login(): the flows are hot, so a collector started after login could miss
-    // early events such as READY.
+    // Classic events. Subscribe before login(): the flows are hot, so a collector started after
+    // login could miss early events such as READY.
     launch {
         discordClient.events.collect { event ->
             when (event) {
-                is ReadyEvent -> {
-                    println("Logged in")
-                }
+                is ReadyEvent -> println("Logged in")
 
                 is MessageCreateEvent -> {
                     val messageContent = event.message.content
@@ -32,47 +27,47 @@ fun main(): Unit = runBlocking {
                         "ping" -> discordClient.sendMessage(messageOriginChannel) {
                             content = "pong!"
                         }
+
+                        // Un bouton sur un message classique (hors interaction). Son custom_id stable
+                        // "refresh" est géré par le handler top-level enregistré plus bas.
+                        "menu" -> discordClient.sendMessage(messageOriginChannel) {
+                            content = "Menu :"
+                            button("Rafraîchir", customId = "refresh") { style = ButtonStyle.SECONDARY }
+                        }
                     }
                 }
 
-                else -> {
-                    println("Received an event that I don't know how to handle: ${event::class.simpleName}")
-                }
+                else -> println("Received an event that I don't know how to handle: ${event::class.simpleName}")
             }
         }
     }
-    launch {
-        discordClient.interactions.collect { interaction ->
-            when (interaction.type) {
-                InteractionTypes.APPLICATION_COMMAND -> {
-                    handleEmbedInteractionCommand(interaction, discordClient)
-                }
 
-                else -> {
-                    println("Received an interaction that I don't know how to handle: ${interaction.type}")
-                }
+    // Interaction routing: one handler per command. A button added inside `respond { }` binds its
+    // own click callback inline via `.click { }` — no separate top-level registration needed.
+    discordClient.on("pingit") {
+        respond {
+            content = "Pong ! Encore ?"
+            embed {
+                title = "Embeded message"
+                description = "Réponse à la commande pingit"
             }
+            button("Re-ping") { style = ButtonStyle.PRIMARY }
+                .click {
+                    update { content = "Re-pong ! 🏓" }
+                }
         }
+    }
+
+    // Réagir à un composant par son custom_id, sans handler de commande autour (clé typée).
+    discordClient.on(InteractionKind.Component, "refresh") {
+        update { content = "Rafraîchi ! 🔄" }
     }
 
     discordClient.login(33283)
 
     val response = discordClient.createGlobalApplicationCommand("pingit") {
-        description = "Send a embed ping message"
+        description = "Send a ping message with a button"
     }
-    println(response)
+    println(response.status)
     println(response.bodyAsText())
-}
-
-suspend fun handleEmbedInteractionCommand(interaction: Interaction, discordClient: DiscordClient) {
-    val interactionData = interaction.data as ApplicationCommandData
-    if (interaction.id == "1229445667831808122".snowflake) {
-        val stringToEmbed = interactionData.options?.get(0)?.value as String
-        discordClient.respondWithMessage(interaction) {
-            embed {
-                title = "Embeded message"
-                description = stringToEmbed
-            }
-        }
-    }
 }

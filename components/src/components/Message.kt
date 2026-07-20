@@ -31,6 +31,12 @@ data class MessagePayload(
     var content: String? = null,
     var tts: Boolean = false,
     var embeds: MutableList<ktordiscord.components.Embed>? = null,
+    var components: MutableList<ktordiscord.components.MessageComponent>? = null,
+    /**
+     * Message flags bitfield. In an interaction response, `1 shl 6` marks the message *ephemeral*
+     * (only the invoking user sees it). Left `null` (omitted) for a normal message.
+     */
+    var flags: Int? = null,
 )
 
 @Serializable

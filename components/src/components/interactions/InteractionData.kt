@@ -46,6 +46,10 @@ sealed class InteractionData {
                     jsonDecoder.json.decodeFromJsonElement<ApplicationCommandData>(data!!)
                 }
 
+                InteractionTypes.MESSAGE_COMPONENT -> {
+                    jsonDecoder.json.decodeFromJsonElement<MessageComponentData>(data!!)
+                }
+
                 // Any other (or unknown/absent) interaction type: keep the raw payload
                 // instead of throwing, so a new Discord type can't crash the session.
                 else -> UnknownInteractionData(type, data)
@@ -83,7 +87,7 @@ data class MessageComponentData(
     val customId: String,
     @SerialName("component_type")
     val componentType: Int = 0, // TODO Enum componentType
-)
+) : InteractionData()
 
 @Serializable
 data class ResolvedData(

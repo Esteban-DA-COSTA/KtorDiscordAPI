@@ -32,6 +32,16 @@ Dette technique et pistes d'amélioration relevées lors de l'audit du 2026-07-1
 
 - [x] **11. Ajouter des tests unitaires de désérialisation.** `EventSerializer`, les enums et `Snowflake` sont des fonctions pures, testables sans réseau avec des payloads JSON réels de Discord. Verrouille les points 1 à 3. Rappel : le projet n'a actuellement **aucun test** (`./kotlin test`). *Fait : `EventDecodeTest` (déjà présent, points 1-3) complété par `SnowflakeTest` + `IntEnumSerializerTest` (`components/test/`) et `OPCodeTest` (`websocket/test/`). 15 tests, tous verts via `./kotlin test`. Répertoire `components/test/` auto-détecté sans config.*
 
+## Routeur d'interactions & boutons (v1 livrée)
+
+Système `discordClient.on("cmd") { respond { button(...).click { } } }` : routeur commande→handler + boutons chaînables (composants de message, dispatch `MESSAGE_COMPONENT`, `defer`/`editOriginal`/`update`, `ephemeral`). Voir `core/src/interactions/`, `components/src/components/MessageComponent.kt`. Dette résiduelle :
+
+- [ ] **Callbacks de composants en mémoire.** `componentHandlers` (custom_id → callback) vit dans `DiscordClient` : perdu au redémarrage, et **croît sans éviction** (chaque rendu d'un bouton auto-`custom_id` ajoute une entrée). → customId stable optionnel, TTL/éviction, ou registre borné.
+- [ ] **Composants limités aux boutons.** Modèle `MessageComponent` scellé prêt à étendre → select menus (`type 3`), text inputs / modals (`MODAL` + `MODAL_SUBMIT`).
+- [ ] **`MessageComponentData.componentType` reste un `Int`.** → enum `ComponentType` sérialisé par entier (pattern `IntEnumSerializer`).
+- [ ] **Pas de bloc `define { }`.** L'ergonomie `respond { }` a été retenue pour permettre plus tard un bloc `define { }` créant l'`ApplicationCommand` dans la même lambda `on`. À implémenter.
+- [ ] **Sérialiseur `MessageComponent` write-only.** `deserialize` lève une erreur (on n'émet que des composants). À compléter si un jour on doit décoder des composants entrants complets.
+
 ## Divers (déjà noté dans CLAUDE.md, rappelé ici)
 
 - [x] `MessageUpdateEvent` (`MessageEvents.kt`) n'a pas l'annotation `@Serializable`.
