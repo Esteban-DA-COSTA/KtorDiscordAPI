@@ -16,6 +16,9 @@ private const val MAX_COMPONENTS_PER_ROW = 5
 /** Ephemeral message flag (`1 << 6`): the response is only visible to the invoking user. */
 private const val EPHEMERAL_FLAG = 1 shl 6
 
+/** Discord's maximum `custom_id` length for a message component. */
+private const val MAX_CUSTOM_ID_LENGTH = 100
+
 /**
  * DSL scope building the [MessagePayload] of an interaction response. Mirrors the `sendMessage { }`
  * fields (content, embeds…) and adds interactive components: [button] returns a [ButtonHandle] whose
@@ -65,6 +68,10 @@ class ResponseScope internal constructor(private val client: DiscordClient) {
         init: (Button.() -> Unit)? = null,
     ): ButtonHandle {
         val button = Button(label = label, customId = customId).apply { init?.invoke(this) }
+        val idLength = button.customId?.length ?: 0
+        require(idLength <= MAX_CUSTOM_ID_LENGTH) {
+            "Button custom_id must be <= $MAX_CUSTOM_ID_LENGTH characters (Discord limit), was $idLength"
+        }
         addComponent(button)
         return ButtonHandle(button, client)
     }
@@ -97,6 +104,12 @@ class ButtonHandle internal constructor(
      * Register the callback run when this button is clicked. Generates a `custom_id` for the button
      * if it has none. No-op for [ButtonStyle.LINK] buttons, which navigate to a url and emit no
      * interaction.
+     *
+     * Intended for **ephemeral / short-lived** buttons: the callback is stored in a bounded cache
+     * (LRU + TTL) and is **lost on restart** (and eventually evicted). For a **persistent** button,
+     * give it a stable `custom_id` and route it with `client.on(InteractionKind.Component, prefix)`,
+     * decoding any state from `ComponentInteractionScope.arg` — that survives restarts and never grows
+     * an in-memory registry.
      */
     fun click(handler: ComponentHandler): ButtonHandle {
         if (button.style == ButtonStyle.LINK) {
@@ -104,7 +117,7 @@ class ButtonHandle internal constructor(
             return this
         }
         val id = button.customId ?: UUID.randomUUID().toString().also { button.customId = it }
-        client.registerComponentHandler(id, handler)
+        client.registerEphemeralComponentHandler(id, handler)
         return this
     }
 }

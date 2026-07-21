@@ -16,7 +16,7 @@ Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publicat
 
 ### Tier 2 — Fortement recommandé
 
-- [ ] **Éviction des `componentHandlers`.** Cf. *« Callbacks de composants en mémoire »*. La map croît sans limite → **fuite mémoire sur tout bot long-running**. Registre borné, TTL ou `customId` stable.
+- [x] **Éviction des `componentHandlers`.** Cf. *« Callbacks de composants en mémoire »*. *Fait (2026-07-21) : le registre est scindé par intention. Les handlers déclarés (`on(InteractionKind.Component, id)`) sont matchés par **préfixe** (`custom_id.substringBefore(':')`, `:` réservé — état lu via `ComponentInteractionScope.arg`) → modèle persistant type JDA, survit au redémarrage. Les closures éphémères de `button(...).click { }` vont dans un `BoundedHandlerCache` **LRU + TTL** (défauts 1024 / 15 min, configurables via `create`) → plus de croissance illimitée. Garde `custom_id` ≤ 100 car. ajoutée. Tests : `core/test/ComponentRoutingTest.kt`.*
 - [ ] **Packaging release** (hors dette listée ci-dessous, prérequis de publication) :
   - [ ] **Versioning** : aucun numéro de version n'existe (`project.yaml` / `module.yaml`). Définir `1.0.0-beta`.
   - [ ] **Publication** : rien de configuré. **JitPack** = chemin le plus rapide pour une beta (tag Git, zéro config Maven Central). `core` est déjà une façade `exported` correcte.
@@ -36,12 +36,13 @@ Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publicat
 1. ~~`Snowflake` partout (modèles + signatures REST)~~ ✅ fait (2026-07-21)
 2. ~~Compléter `Message` + `Member`~~ ✅ fait (2026-07-21)
 3. ~~Enum `ComponentType`~~ ✅ fait (2026-07-21)
-4. Éviction `componentHandlers`
+4. ~~Éviction `componentHandlers`~~ ✅ fait (2026-07-21)
 5. Version + JitPack + README + `Core_module.md`
 6. Rédiger la section « Known limitations » (Tier 3)
 
 **Tier 1 livré (2026-07-21).** L'API publique est figée côté types d'ids, modèles centraux et enum de
-composant. Reste avant la beta : le Tier 2 (fuite `componentHandlers` + packaging/doc).
+composant. **Fuite `componentHandlers` corrigée (2026-07-21).** Reste avant la beta : le packaging/doc
+(version + publication + README + `Core_module.md`).
 
 > Note : le piège « crash en DM sur `MESSAGE_CREATE`/`MESSAGE_UPDATE` » qui figurait dans `CLAUDE.md` était
 > déjà **obsolète** (décodage nullable dans `Event.kt`, corrigé via le point 3) — `CLAUDE.md` a été mis à jour.
@@ -80,7 +81,7 @@ composant. Reste avant la beta : le Tier 2 (fuite `componentHandlers` + packagin
 
 Système `discordClient.on("cmd") { respond { button(...).click { } } }` : routeur commande→handler + boutons chaînables (composants de message, dispatch `MESSAGE_COMPONENT`, `defer`/`editOriginal`/`update`, `ephemeral`). Voir `core/src/interactions/`, `components/src/components/MessageComponent.kt`. Dette résiduelle :
 
-- [ ] **Callbacks de composants en mémoire.** `componentHandlers` (custom_id → callback) vit dans `DiscordClient` : perdu au redémarrage, et **croît sans éviction** (chaque rendu d'un bouton auto-`custom_id` ajoute une entrée). → customId stable optionnel, TTL/éviction, ou registre borné.
+- [x] **Callbacks de composants en mémoire.** *Corrigé (2026-07-21).* Deux registres dans `DiscordClient` : `componentHandlers` déclaré (`on(InteractionKind.Component, prefix)`, matché par préfixe, `:` réservé, état via `arg` — persistant, survit au redémarrage) et `ephemeralComponentHandlers` (`BoundedHandlerCache` LRU + TTL) pour les closures `button(...).click { }`. La croissance illimitée et la fuite de closures sont éliminées. Reste (Tier 3) : la persistance des handlers **éphémères** au redémarrage — par nature perdus, à documenter.
 - [ ] **Composants limités aux boutons.** Modèle `MessageComponent` scellé prêt à étendre → select menus (`type 3`), text inputs / modals (`MODAL` + `MODAL_SUBMIT`).
 - [x] **`MessageComponentData.componentType` reste un `Int`.** → enum `ComponentType` sérialisé par entier (pattern `IntEnumSerializer`). *Fait (2026-07-21, Tier 1) : enum `ComponentType` (`ACTION_ROW`…`CHANNEL_SELECT` + `UNKNOWN(-1)`).*
 - [x] **Pas de bloc `define { }`.** L'ergonomie `respond { }` a été retenue pour permettre plus tard un bloc `define { }` créant l'`ApplicationCommand` dans la même lambda `on`. *Fait : `on(name) { }` reçoit désormais un `CommandScope` (config, exécuté à l'enregistrement) avec `define(guildId?) { }` (global ou guilde), `handle { }` (dispatch dynamique complet), et les sucres `respond { }` / `defer()`. Les `define` sont collectés puis synchronisés en **bulk-overwrite** au `login()`. Endpoints REST Application Command complétés au passage (global get/edit/delete/bulk, guild create/get/list/edit/delete/bulk, permissions get/edit) + modèles de permissions.*
