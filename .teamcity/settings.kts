@@ -35,6 +35,7 @@ project {
     buildType(Build)
     buildType(Qodana_1)
     buildType(GenerateDoc)
+    buildType(PublishPackages)
 
     features {
         youtrack {
@@ -83,7 +84,6 @@ object GenerateDoc : BuildType({
 
     params {
         // Secret : PAT fine-grained, scope 'Contents: write' sur ce repo uniquement.
-        // Remplacer par le token chiffré généré via l'UI TeamCity (icône clé).
         password("env.GH_PAGES_TOKEN", "credentialsJSON:ffdd292f-4e06-4799-a131-f7d8695583e6")
         param("docs.instance", "Writerside/kda")
         param("docs.artifact", "webHelpKDA2-all.zip")
@@ -143,7 +143,15 @@ object GenerateDoc : BuildType({
 
     triggers {
         vcs {
+            branchFilter = "+:main"
             triggerRules = "+:Writerside/**"
+        }
+    }
+
+    dependencies {
+        // La doc ne se publie que si Build & Test passe (même révision).
+        snapshot(Build) {
+            onDependencyFailure = FailureAction.FAIL_TO_START
         }
     }
 
@@ -186,5 +194,50 @@ object Qodana_1 : BuildType({
 
     requirements {
         exists("docker.server.version")
+    }
+})
+
+object PublishPackages : BuildType({
+    name = "Publish packages"
+    description = "Écrase creds.properties avec les creds GitHub Packages puis lance `kotlin package`"
+
+    params {
+        // Username GitHub Packages (public, pas secret) — propriétaire du repo par défaut.
+        param("packages.username", "Esteban-DA-COSTA")
+        // PAT classic avec le scope `write:packages` (+ `read:packages`). À saisir via l'UI (icône clé).
+        password("env.GH_PACKAGES_TOKEN", "credentialsJSON:REMPLACER-PAR-LE-TOKEN-CHIFFRE")
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+
+    steps {
+        script {
+            name = "Set credentials"
+            id = "set_credentials"
+            scriptContent = """
+                {
+                  echo "username=%packages.username%"
+                  echo "password=${'$'}GH_PACKAGES_TOKEN"
+                } > creds.properties
+            """.trimIndent()
+        }
+        script {
+            name = "Package"
+            id = "package"
+            scriptContent = """
+                chmod +x ./kotlin
+                ./kotlin package
+            """.trimIndent()
+        }
+    }
+
+    dependencies {
+        // Ne publie pas d'artefacts issus d'un build cassé.
+        snapshot(Build) {
+            onDependencyFailure = FailureAction.FAIL_TO_START
+        }
     }
 })
