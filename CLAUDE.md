@@ -91,6 +91,22 @@ app ──► core ──► components   (exported)
 - Le consommateur itère sur les channels : `for (event in client.events) { when (event) { is MessageCreateEvent -> ... } }` (voir `app/src/Main.kt` pour l'exemple canonique).
 - Les interactions ont leur propre channel `client.interactions`.
 
+### Routage des composants (boutons…)
+Deux registres dans `DiscordClient`, séparés **par intention** pour que le chemin éphémère ne puisse
+plus fuir (`core/src/interactions/BoundedHandlerCache.kt` + `dispatchInteraction`) :
+- **Déclaré / persistant** : `on(InteractionKind.Component, "prefix") { … }`. Le dispatch matche par
+  **préfixe** = `custom_id.substringBefore(':')` (donc un id sans `:` matche à l'identique). `:` est un
+  **séparateur réservé** : la clé enregistrée ne le contient pas ; l'état après le premier `:` est lu
+  via `ComponentInteractionScope.arg` (ex. `custom_id = "approve:42"` → handler `"approve"`, `arg = "42"`).
+  Registre `mutableMapOf` non borné (fini, contrôlé par le dev), survit au redémarrage. Modèle cible
+  Discord (cf. JDA / discord.py « persistent views »).
+- **Éphémère / jetable** : `button(...).click { }` génère un `custom_id` UUID et stocke la closure dans
+  un `BoundedHandlerCache` **LRU + TTL** (défauts `1024` / `15 min`, réglables via
+  `DiscordClient.create(token, componentCacheSize, componentCacheTtlMs)`). Perdu au redémarrage, évincé
+  au-delà des bornes — **ne l'utiliser que pour du court-lived**. Garde `custom_id` ≤ 100 car. dans
+  `button()`.
+- Ordre de résolution du dispatch : déclaré (préfixe) → cache éphémère. Tests : `core/test/ComponentRoutingTest.kt`.
+
 ### Divers
 - Loggers nommés : `KotlinLogging.logger("HTTP_LOGGER")` et `"WSS_LOGGER"`.
 - KDoc en anglais sur l'API publique ; doc Writerside en français.

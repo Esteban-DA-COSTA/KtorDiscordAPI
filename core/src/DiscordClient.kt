@@ -20,6 +20,7 @@ import ktordiscord.components.MessagePayload
 import ktordiscord.components.Snowflake
 import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.interactions.ApplicationCommandData
+import ktordiscord.components.interactions.ApplicationCommandPayload
 import ktordiscord.components.interactions.Interaction
 import ktordiscord.components.interactions.MessageComponentData
 import ktordiscord.gateway.DiscordWebSocketSession
@@ -34,7 +35,11 @@ import kotlin.reflect.KClass
  *
  * @property token The application identification token.
  */
-class DiscordClient private constructor(internal val token: String) {
+class DiscordClient private constructor(
+    internal val token: String,
+    componentCacheSize: Int,
+    componentCacheTtlMs: Long,
+) {
     private val httpClientLogger = KotlinLogging.logger("HTTP_LOGGER")
     internal val interactionLogger = KotlinLogging.logger("INTERACTION_LOGGER")
 
@@ -111,9 +116,18 @@ class DiscordClient private constructor(internal val token: String) {
     // the web socket session used to receive/send Gateway intents
     private val wssSession = DiscordWebSocketSession(httpClient, scope, _events, _interactions, token)
 
-    // Interaction routing registries: application command name -> handler, component custom_id -> handler.
+    // Interaction routing registries: application command name -> handler.
     private val commandHandlers = mutableMapOf<String, CommandHandler>()
+
+    // Component routing splits by intent to keep the ephemeral path from ever leaking:
+    //  - componentHandlers: developer-declared via `on(InteractionKind.Component, id)`. Finite and
+    //    controlled. Keyed by PREFIX (custom_id.substringBefore(COMPONENT_ID_SEPARATOR)), which equals
+    //    the whole id when it carries no separator — so an exact custom_id still matches.
+    //  - ephemeralComponentHandlers: closures registered by `button(...).click { }` under an auto UUID.
+    //    Bounded (LRU + TTL) so this once-unbounded path can no longer grow for the process lifetime.
     private val componentHandlers = mutableMapOf<String, ComponentHandler>()
+    private val ephemeralComponentHandlers =
+        BoundedHandlerCache<ComponentHandler>(componentCacheSize, componentCacheTtlMs)
 
     // Command definitions declared via `on(name) { define { } }`, pushed to Discord on login().
     private class CommandDefinition(
@@ -168,9 +182,15 @@ class DiscordClient private constructor(internal val token: String) {
          * are required. Prefer this over a constructor to keep instantiation non-blocking.
          *
          * @param token the bot application identification token.
+         * @param componentCacheSize LRU cap on ephemeral (`click { }`) component handlers.
+         * @param componentCacheTtlMs how long an ephemeral component handler stays live, in ms.
          */
-        suspend fun create(token: String): DiscordClient {
-            val client = DiscordClient(token)
+        suspend fun create(
+            token: String,
+            componentCacheSize: Int = BoundedHandlerCache.DEFAULT_MAX_SIZE,
+            componentCacheTtlMs: Long = BoundedHandlerCache.DEFAULT_TTL_MS,
+        ): DiscordClient {
+            val client = DiscordClient(token, componentCacheSize, componentCacheTtlMs)
             client.applicationId = client.getMeApplicationId()
             client.interactionManager = InteractionManager.create(client)
             return client
@@ -269,7 +289,7 @@ class DiscordClient private constructor(internal val token: String) {
         if (pendingCommandDefinitions.isEmpty()) return
 
         fun CommandDefinition.toPayload() =
-            ktordiscord.components.interactions.ApplicationCommandPayload(name = name).apply(init)
+            ApplicationCommandPayload(name = name).apply(init)
 
         val (guildDefs, globalDefs) = pendingCommandDefinitions.partition { it.guildId != null }
 
@@ -300,8 +320,11 @@ class DiscordClient private constructor(internal val token: String) {
      *
      * - [InteractionKind.Command] : [id] is an application command **name**; receiver is
      *   [CommandInteractionScope] (`respond` / `defer` / `editOriginal`).
-     * - [InteractionKind.Component] : [id] is a component **`custom_id`**; receiver is
-     *   [ComponentInteractionScope] (`respond` / `update` / `defer` / `editOriginal`).
+     * - [InteractionKind.Component] : [id] is a component **`custom_id` prefix** (matched against the
+     *   part before the first `:`, so it also matches an exact id with no `:`); receiver is
+     *   [ComponentInteractionScope] (`respond` / `update` / `defer` / `editOriginal`), whose `arg`
+     *   exposes the state after the separator. This is the model for **persistent** components — a
+     *   stable id survives a restart, unlike the auto-generated ids of `button(...).click { }`.
      *
      * Registering the same (kind, id) again replaces the previous handler. This is how you react to
      * a component **without** a surrounding command handler (e.g. a persistent button with a stable
@@ -310,6 +333,8 @@ class DiscordClient private constructor(internal val token: String) {
      * ```
      * client.on(InteractionKind.Command, "ping") { respond { content = "pong" } }
      * client.on(InteractionKind.Component, "menu-refresh") { update { content = "refreshed" } }
+     * // prefix routing: matches "approve:<id>", decode the state from `arg`
+     * client.on(InteractionKind.Component, "approve") { update { content = "approved #$arg" } }
      * ```
      */
     fun <S : InteractionScope> on(kind: InteractionKind<S>, id: String, handler: suspend S.() -> Unit) {
@@ -377,9 +402,16 @@ class DiscordClient private constructor(internal val token: String) {
         pendingCommandDefinitions.add(CommandDefinition(name, guildId, init))
     }
 
-    // Called by ButtonHandle.click / InteractionKind.Component.register to bind a component callback.
+    // Called by InteractionKind.Component.register to bind a developer-declared component callback,
+    // keyed by prefix (see the componentHandlers doc and dispatchInteraction).
     internal fun registerComponentHandler(customId: String, handler: ComponentHandler) {
         componentHandlers[customId] = handler
+    }
+
+    // Called by ButtonHandle.click to bind an ephemeral component callback under its auto-generated
+    // custom_id. Backed by a bounded cache, so this path cannot leak.
+    internal fun registerEphemeralComponentHandler(customId: String, handler: ComponentHandler) {
+        ephemeralComponentHandlers.put(customId, handler)
     }
 
     private suspend fun dispatchInteraction(interaction: Interaction) {
@@ -391,9 +423,14 @@ class DiscordClient private constructor(internal val token: String) {
             }
 
             is MessageComponentData -> {
-                val handler = componentHandlers[data.customId]
-                if (handler != null) handler(ComponentInteractionScope(interaction, this))
-                else interactionLogger.debug { "No handler registered for component '${data.customId}'" }
+                // Declared handlers match by prefix (the part before COMPONENT_ID_SEPARATOR, which is
+                // the whole id when absent → exact ids still match); fall back to the ephemeral cache,
+                // keyed by the full custom_id (an auto UUID, never containing the separator).
+                val cid = data.customId
+                val handler = componentHandlers[cid.substringBefore(COMPONENT_ID_SEPARATOR)]
+                    ?: ephemeralComponentHandlers.get(cid)
+                if (handler != null) handler(ComponentInteractionScope(interaction, this, cid))
+                else interactionLogger.debug { "No handler registered for component '$cid'" }
             }
 
             else -> interactionLogger.debug {

@@ -55,6 +55,9 @@ fun main(): Unit = runBlocking {
         update { content = "Rafraîchi ! 🔄" }
     }
 
-    // login() syncs every `define { }` above to Discord (bulk overwrite) and connects the Gateway.
-    discordClient.login(33283)
+    // login() syncs every `define { }` above to Discord (bulk overwrite) and connects the Gateway,
+    // returning the Job of the (reconnecting) Gateway loop. join() keeps runBlocking — and the process
+    // — alive for as long as the bot is connected; without it main returns immediately and the JVM
+    // exits (the client's coroutines run on daemon threads).
+    discordClient.login(33283).join()
 }

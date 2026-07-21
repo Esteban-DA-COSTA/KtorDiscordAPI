@@ -6,6 +6,14 @@ import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.interactions.ApplicationCommandPayload
 import ktordiscord.components.interactions.Interaction
 
+/**
+ * Separator between a component's routing key (prefix) and its state payload inside a `custom_id`.
+ * `on(InteractionKind.Component, "approve")` matches every click whose id is `"approve"` or starts
+ * with `"approve:"`; the part after the first separator is exposed as [ComponentInteractionScope.arg].
+ * Reserved: a routing key registered via `on(...)` must not contain it.
+ */
+internal const val COMPONENT_ID_SEPARATOR = ':'
+
 /** Callback registered for an application command, run with a [CommandInteractionScope] receiver. */
 typealias CommandHandler = suspend CommandInteractionScope.() -> Unit
 
@@ -129,7 +137,11 @@ sealed class InteractionKind<S : InteractionScope> {
             client.registerCommandHandler(id, handler)
     }
 
-    /** Message components (buttons…), keyed by `custom_id`. Receiver: [ComponentInteractionScope]. */
+    /**
+     * Message components (buttons…), keyed by the **prefix** of the `custom_id` (the part before the
+     * first [COMPONENT_ID_SEPARATOR], which is the whole id when it has none). Receiver:
+     * [ComponentInteractionScope]; the state after the separator is read via [ComponentInteractionScope.arg].
+     */
     object Component : InteractionKind<ComponentInteractionScope>() {
         override fun register(client: DiscordClient, id: String, handler: ComponentHandler) =
             client.registerComponentHandler(id, handler)
@@ -140,7 +152,15 @@ sealed class InteractionKind<S : InteractionScope> {
 class ComponentInteractionScope internal constructor(
     interaction: Interaction,
     client: DiscordClient,
+    /** The raw `custom_id` of the clicked component (routing prefix + optional state payload). */
+    val customId: String,
 ) : InteractionScope(interaction, client) {
+
+    /**
+     * The state payload carried after the first [COMPONENT_ID_SEPARATOR] in [customId], or `""` when
+     * the id carries none. For a `"approve:42"` click registered under `"approve"`, this is `"42"`.
+     */
+    val arg: String get() = customId.substringAfter(COMPONENT_ID_SEPARATOR, "")
 
     /** Reply with a new message (`CHANNEL_MESSAGE_WITH_SOURCE`), leaving the source message intact. */
     suspend fun respond(init: ResponseScope.() -> Unit) =
