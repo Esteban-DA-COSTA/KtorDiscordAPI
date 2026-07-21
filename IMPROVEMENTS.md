@@ -2,6 +2,46 @@
 
 Dette technique et pistes d'amélioration relevées lors de l'audit du 2026-07-17. Cocher au fur et à mesure ; supprimer une entrée si elle devient sans objet.
 
+## Roadmap v1.0 beta
+
+Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publication **v1.0 beta**. Les items ci-dessous référencent les entrées détaillées des sections plus bas. Principe directeur : tout ce qui touche le **contrat public** (types, signatures) doit être figé **avant** d'exposer des early adopters, sinon cela devient un breaking change.
+
+### Tier 1 — Bloquant : figer l'API publique
+
+À traiter **avant** la beta (breaking change sinon).
+
+- [ ] **Harmoniser le typage des ids sur `Snowflake` partout.** Cf. *« IDs `Long`/`String` dans les modèles »* et *« Incohérence de typage des ids »*. Aujourd'hui `Snowflake` n'est utilisé que sur `Channel`/`Message`/`VoiceState`/interactions ; `Guild`/`Role`/`User` sont en `Long` et **toutes les fonctions REST prennent des `String`**. Refactor le plus impactant pour l'ergonomie publique et le plus coûteux à repousser. → à faire en premier.
+- [ ] **Compléter les modèles `Message` et `Member` sur les champs courants.** Cf. *« Modèles `Member`/`Message` partiels »*. `Message` est le modèle central : sans `attachments`, `type`, `referenced_message`, `pinned`… un bot est fonctionnellement bridé (`ignoreUnknownKeys` évite le crash mais rend les champs inaccessibles).
+- [ ] **Enum `ComponentType` au lieu de `Int`.** Cf. *« `MessageComponentData.componentType` reste un `Int` »*. Petit, mais visible dans l'API publique (`InteractionData`) → à typer avant de figer.
+
+### Tier 2 — Fortement recommandé
+
+- [ ] **Éviction des `componentHandlers`.** Cf. *« Callbacks de composants en mémoire »*. La map croît sans limite → **fuite mémoire sur tout bot long-running**. Registre borné, TTL ou `customId` stable.
+- [ ] **Packaging release** (hors dette listée ci-dessous, prérequis de publication) :
+  - [ ] **Versioning** : aucun numéro de version n'existe (`project.yaml` / `module.yaml`). Définir `1.0.0-beta`.
+  - [ ] **Publication** : rien de configuré. **JitPack** = chemin le plus rapide pour une beta (tag Git, zéro config Maven Central). `core` est déjà une façade `exported` correcte.
+  - [ ] **Documentation d'entrée** : pas de `README.md` racine ; `Writerside/topics/Core_module.md` vide et Home en placeholder « My app ». Les guides Basic_usage / Interactions / Events sont déjà corrects.
+
+### Tier 3 — Assumable en « known limitations » (post-beta)
+
+À **documenter** honnêtement plutôt qu'à implémenter pour la beta :
+
+- **Voice State Update (OP 4) sortant** (support vocal) — cf. section « Commandes Gateway sortantes ».
+- **Select menus / modals** — cf. *« Composants limités aux boutons »* (+ *« Sérialiseur `MessageComponent` write-only »*).
+- **Persistance des handlers au redémarrage**, **catch-all events**, **ordre des multi-handlers** — cf. sections « Routeur d'events » / « Routeur d'interactions ».
+- **Modèles entrants REST encore partiels** (`permission_overwrites`, `global_name`, `Emoji`…) — cf. section « Couverture des endpoints REST ».
+
+### Ordre de bataille
+
+1. `Snowflake` partout (modèles + signatures REST) — le gros morceau
+2. Compléter `Message` + `Member`
+3. Enum `ComponentType`
+4. Éviction `componentHandlers`
+5. Version + JitPack + README + `Core_module.md`
+6. Rédiger la section « Known limitations » (Tier 3)
+
+> Note : le piège « crash en DM sur `MESSAGE_CREATE`/`MESSAGE_UPDATE` » encore mentionné dans `CLAUDE.md` est **obsolète** — le décodage est nullable (`Event.kt`), corrigé via le point 3 ci-dessous. `CLAUDE.md` reste à mettre à jour.
+
 ## Priorité 1 — Robustesse face à l'API Discord
 
 - [x] **1. Tolérance aux événements/opcodes inconnus.** `DispatchEvents.valueOf(eventName)` (`websocket/src/gateway/events/Event.kt`) lève une exception sur tout événement dispatch non listé (`GUILD_MEMBER_UPDATE`, `TYPING_START`…), `OPCodeSerializer` fait de même pour un opcode inconnu, et `InteractionData.Serializer` a un `TODO(type!!.name)` pour tous les types sauf `APPLICATION_COMMAND`. Chaque occurrence plante la boucle de session et force une reconnexion. → Introduire un fallback `UnknownEvent(name, data)` loggé en debug au lieu de lever. Meilleur ratio effort/bénéfice du projet.
