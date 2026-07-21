@@ -10,7 +10,7 @@ Tout s'y trouve : premiers pas, configuration du client, appels REST, événemen
 
 ## Installation
 
-Les modules sont publiés sur **GitHub Packages**. Dépendre de `core` suffit : `components` et `websocket` sont tirés en transitif.
+Les modules sont publiés sur **GitHub Packages**. Dépendre de `kda` (le module `core`) suffit : `components` et `websocket` sont tirés en transitif.
 
 ```kotlin
 repositories {
@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.esteban-da-costa:core:1.0.0-beta")
+    implementation("io.github.esteban-da-costa:kda:1.0.0-beta")
 }
 ```
 
