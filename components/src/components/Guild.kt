@@ -53,31 +53,31 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Guild(
-    val id: Long,
+    val id: Snowflake,
     val name: String,
     val icon: String? = null,
     @SerialName("icon_hash") val iconHash: String? = null,
     val splash: String? = null,
     @SerialName("discovery_splash") val discoverySplash: String? = null,
-    @SerialName("owner_id") val ownerId: Long? = null,
+    @SerialName("owner_id") val ownerId: Snowflake? = null,
     val permissions: String? = null,
     val region: String? = null,
     @SerialName("home_header") val homeHeader: String? = null,
-    @SerialName("afk_channel_id") val afkChannelId: Long? = null,
+    @SerialName("afk_channel_id") val afkChannelId: Snowflake? = null,
     @SerialName("afk_timeout") val afkTimeout: Int,
     @SerialName("widget_enabled") val widgetEnabled: Boolean? = null,
-    @SerialName("widget_channel_id") val widgetChannelId: Long? = null,
+    @SerialName("widget_channel_id") val widgetChannelId: Snowflake? = null,
     @SerialName("verification_level") val verificationLevel: Int,
     @SerialName("default_message_notifications") val defaultMessageNotifications: Int,
     @SerialName("explicit_content_filter") val explicitContentFilter: Int,
-    val roles: List<ktordiscord.components.Role>,
-    val emojis: List<ktordiscord.components.Emoji>,
-    val features: List<ktordiscord.components.GuildFeatures>,
+    val roles: List<Role>,
+    val emojis: List<Emoji>,
+    val features: List<GuildFeatures>,
     @SerialName("mfa_level") val mfaLevel: Int,
-    @SerialName("application_id") val applicationId: Long? = null,
-    @SerialName("system_channel_id") val systemChannelId: Long? = null,
+    @SerialName("application_id") val applicationId: Snowflake? = null,
+    @SerialName("system_channel_id") val systemChannelId: Snowflake? = null,
     @SerialName("system_channel_flags") val systemChannelFlags: Int,
-    @SerialName("rules_channel_id") val rulesChannelId: Long? = null,
+    @SerialName("rules_channel_id") val rulesChannelId: Snowflake? = null,
     @SerialName("max_presences") val maxPresences: Int? = null,
     @SerialName("max_members") val maxMembers: Int? = null,
     @SerialName("vanity_url_code") val vanityUrlCode: String? = null,
@@ -86,36 +86,36 @@ data class Guild(
     @SerialName("premium_tier") val premiumTier: Int,
     @SerialName("premium_subscription_count") val premiumSubscriptionCount: Int? = null,
     @SerialName("preferred_locale") val preferredLocale: String,
-    @SerialName("public_updates_channel_id") val publicUpdatesChannelId: Long? = null,
+    @SerialName("public_updates_channel_id") val publicUpdatesChannelId: Snowflake? = null,
     @SerialName("max_stage_video_channel_users") val maxStageVideoChannelUsers: Long? = null,
     @SerialName("max_video_channel_users") val maxVideoChannelUsers: Int? = null,
     @SerialName("approximate_member_count") val approximateMemberCount: Int? = null,
     @SerialName("approximate_presence_count") val approximatePresenceCount: Int? = null,
-    @SerialName("safety_alerts_channel_id") val safetyAlertsChannelId: Long? = null,
-    @SerialName("welcome_screen") val welcomeScreen: ktordiscord.components.WelcomeScreen? = null,
+    @SerialName("safety_alerts_channel_id") val safetyAlertsChannelId: Snowflake? = null,
+    @SerialName("welcome_screen") val welcomeScreen: WelcomeScreen? = null,
     @SerialName("nsfw_level") val nsfwLevel: Int,
     @SerialName("hub_type") val hubType: String? = null,
-    @SerialName("latest_onboarding_question_id") val latestOnboardingQuestionId: Long? = null,
+    @SerialName("latest_onboarding_question_id") val latestOnboardingQuestionId: Snowflake? = null,
     val nsfw: Boolean = false,
-    val stickers: List<ktordiscord.components.Sticker>,
+    val stickers: List<Sticker>,
     @SerialName("incidents_data") val incidentsData: String? = null,
     @SerialName("premium_progress_bar_enabled") val premiumProgressBarEnabled: Boolean,
     @SerialName("embed_enabled") val embedEnabled: Boolean?,
-    @SerialName("embed_channel_id") val embedChannelId: Long? = null
+    @SerialName("embed_channel_id") val embedChannelId: Snowflake? = null
 
 )
 
 @Serializable
 data class WelcomeScreen(
     val description: String? = null,
-    @SerialName("welcome_channels") val welcomeChannels: List<ktordiscord.components.WelcomeScreenChannel>,
+    @SerialName("welcome_channels") val welcomeChannels: List<WelcomeScreenChannel>,
 )
 
 @Serializable
 data class WelcomeScreenChannel(
-    @SerialName("channel_id") val channelId: Long? = null,
+    @SerialName("channel_id") val channelId: Snowflake? = null,
     val description: String? = null,
-    @SerialName("emoji_id") val emojiId: Long? = null,
+    @SerialName("emoji_id") val emojiId: Snowflake? = null,
     @SerialName("emoji_name") val emojiName: String? = null,
 )
 
@@ -151,6 +151,6 @@ enum class GuildFeatures {
 
 @Serializable
 data class UnavailableGuild(
-    val id: String,
+    val id: Snowflake,
     val unavailable: Boolean
 )

@@ -10,9 +10,9 @@ Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publicat
 
 À traiter **avant** la beta (breaking change sinon).
 
-- [ ] **Harmoniser le typage des ids sur `Snowflake` partout.** Cf. *« IDs `Long`/`String` dans les modèles »* et *« Incohérence de typage des ids »*. Aujourd'hui `Snowflake` n'est utilisé que sur `Channel`/`Message`/`VoiceState`/interactions ; `Guild`/`Role`/`User` sont en `Long` et **toutes les fonctions REST prennent des `String`**. Refactor le plus impactant pour l'ergonomie publique et le plus coûteux à repousser. → à faire en premier.
-- [ ] **Compléter les modèles `Message` et `Member` sur les champs courants.** Cf. *« Modèles `Member`/`Message` partiels »*. `Message` est le modèle central : sans `attachments`, `type`, `referenced_message`, `pinned`… un bot est fonctionnellement bridé (`ignoreUnknownKeys` évite le crash mais rend les champs inaccessibles).
-- [ ] **Enum `ComponentType` au lieu de `Int`.** Cf. *« `MessageComponentData.componentType` reste un `Int` »*. Petit, mais visible dans l'API publique (`InteractionData`) → à typer avant de figer.
+- [x] **Harmoniser le typage des ids sur `Snowflake` partout.** Cf. *« IDs `Long`/`String` dans les modèles »* et *« Incohérence de typage des ids »*. *Fait (2026-07-21) : tous les ids des modèles (`Guild`/`Role`/`User`/`Member`/`Emoji`/`Application`/`Team`/`Sticker`/`Activity`/`Overwrite`/`Message.channelId`…), des payloads sortants et des ~60 signatures REST (incluant la pagination `before`/`after`/`around`) passent en `Snowflake`. Sites internes repointés (`applicationId`, `interaction.id`…), `.value` supprimés. Non convertis (identifiants non-snowflake) : tokens, `custom_id`, `emoji`, `session_id`, `ActivityParty.id`. Bitfields de permissions laissés en `String`. `applicationId` : sentinelle `Snowflake("")` (inline class ⇒ pas de `lateinit`).*
+- [x] **Compléter les modèles `Message` et `Member` sur les champs courants.** Cf. *« Modèles `Member`/`Message` partiels »*. *Fait (2026-07-21) : `Message` gagne `mention_everyone`, `mentions`, `mention_roles`, `reactions`, `pinned`, `webhook_id`, `type` (nouvel enum `MessageType`), `attachments`, `message_reference` (nouveau modèle `MessageReference`), `referenced_message`, `sticker_items` (nouveau modèle `StickerItem`), `flags`. `Member` gagne `banner`, `premium_since`, `pending`, `flags`, `communication_disabled_until`. `Attachment` rendu tolérant (champs optionnels nullables/défauts). **Reporté (Tier 3)** : `components` en réception (sérialiseur `MessageComponent` write-only) et `nonce` (type mixte int/string → risque de crash de décodage).*
+- [x] **Enum `ComponentType` au lieu de `Int`.** Cf. *« `MessageComponentData.componentType` reste un `Int` »*. *Fait (2026-07-21) : enum `ComponentType` (pattern `IntEnumSerializer`, `UNKNOWN(-1)` de repli) sur `MessageComponentData.componentType`.*
 
 ### Tier 2 — Fortement recommandé
 
@@ -33,14 +33,18 @@ Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publicat
 
 ### Ordre de bataille
 
-1. `Snowflake` partout (modèles + signatures REST) — le gros morceau
-2. Compléter `Message` + `Member`
-3. Enum `ComponentType`
+1. ~~`Snowflake` partout (modèles + signatures REST)~~ ✅ fait (2026-07-21)
+2. ~~Compléter `Message` + `Member`~~ ✅ fait (2026-07-21)
+3. ~~Enum `ComponentType`~~ ✅ fait (2026-07-21)
 4. Éviction `componentHandlers`
 5. Version + JitPack + README + `Core_module.md`
 6. Rédiger la section « Known limitations » (Tier 3)
 
-> Note : le piège « crash en DM sur `MESSAGE_CREATE`/`MESSAGE_UPDATE` » encore mentionné dans `CLAUDE.md` est **obsolète** — le décodage est nullable (`Event.kt`), corrigé via le point 3 ci-dessous. `CLAUDE.md` reste à mettre à jour.
+**Tier 1 livré (2026-07-21).** L'API publique est figée côté types d'ids, modèles centraux et enum de
+composant. Reste avant la beta : le Tier 2 (fuite `componentHandlers` + packaging/doc).
+
+> Note : le piège « crash en DM sur `MESSAGE_CREATE`/`MESSAGE_UPDATE` » qui figurait dans `CLAUDE.md` était
+> déjà **obsolète** (décodage nullable dans `Event.kt`, corrigé via le point 3) — `CLAUDE.md` a été mis à jour.
 
 ## Priorité 1 — Robustesse face à l'API Discord
 
@@ -78,7 +82,7 @@ Système `discordClient.on("cmd") { respond { button(...).click { } } }` : route
 
 - [ ] **Callbacks de composants en mémoire.** `componentHandlers` (custom_id → callback) vit dans `DiscordClient` : perdu au redémarrage, et **croît sans éviction** (chaque rendu d'un bouton auto-`custom_id` ajoute une entrée). → customId stable optionnel, TTL/éviction, ou registre borné.
 - [ ] **Composants limités aux boutons.** Modèle `MessageComponent` scellé prêt à étendre → select menus (`type 3`), text inputs / modals (`MODAL` + `MODAL_SUBMIT`).
-- [ ] **`MessageComponentData.componentType` reste un `Int`.** → enum `ComponentType` sérialisé par entier (pattern `IntEnumSerializer`).
+- [x] **`MessageComponentData.componentType` reste un `Int`.** → enum `ComponentType` sérialisé par entier (pattern `IntEnumSerializer`). *Fait (2026-07-21, Tier 1) : enum `ComponentType` (`ACTION_ROW`…`CHANNEL_SELECT` + `UNKNOWN(-1)`).*
 - [x] **Pas de bloc `define { }`.** L'ergonomie `respond { }` a été retenue pour permettre plus tard un bloc `define { }` créant l'`ApplicationCommand` dans la même lambda `on`. *Fait : `on(name) { }` reçoit désormais un `CommandScope` (config, exécuté à l'enregistrement) avec `define(guildId?) { }` (global ou guilde), `handle { }` (dispatch dynamique complet), et les sucres `respond { }` / `defer()`. Les `define` sont collectés puis synchronisés en **bulk-overwrite** au `login()`. Endpoints REST Application Command complétés au passage (global get/edit/delete/bulk, guild create/get/list/edit/delete/bulk, permissions get/edit) + modèles de permissions.*
 - [ ] **Sérialiseur `MessageComponent` write-only.** `deserialize` lève une erreur (on n'émet que des composants). À compléter si un jour on doit décoder des composants entrants complets.
 
@@ -127,11 +131,12 @@ Nouveaux fichiers `websocket/src/gateway/events/{Guild,Member,Role,Reaction,Typi
 modèle `components/src/components/VoiceState.kt`. Tests : `DispatchCoverageTest` (un décodage par event).
 Dette résiduelle :
 
-- [ ] **Modèles `Member`/`Message` partiels.** Plusieurs events réutilisent `Member`/`Message` qui
-  n'exposent pas tous les champs Gateway (`premium_since`, `pending`, `attachments`, `reactions`…) ;
-  `ignoreUnknownKeys` les tolère mais ils ne sont pas typés. À enrichir au fil du besoin.
-- [ ] **IDs `Long`/`String` dans les modèles.** Le refactor `Snowflake` est limité à la couche event ;
-  `Guild`/`Role`/`User`/`Member` gardent leurs IDs `Long`/`String` (incohérence pré-existante).
+- [x] **Modèles `Member`/`Message` partiels.** *Fait (2026-07-21, Tier 1) : `Message` et `Member` enrichis
+  des champs courants (`attachments`, `reactions`, `type`, `pinned`, `premium_since`, `pending`,
+  `communication_disabled_until`…). Reliquat assumé : `components` en réception (sérialiseur write-only)
+  et `nonce` (type mixte) laissés de côté, cf. Tier 3.*
+- [x] **IDs `Long`/`String` dans les modèles.** *Fait (2026-07-21, Tier 1) : `Guild`/`Role`/`User`/`Member`
+  et les autres modèles passent tous en `Snowflake` (voir Tier 1). Plus d'incohérence de couche.*
 
 ## Couverture des endpoints REST (v1 élargie)
 
@@ -152,14 +157,12 @@ d'encodage/décodage : `RestPayloadEncodingTest`, `RestModelDecodingTest`. Dette
   centralisée des 4xx/5xx avec corps d'erreur `DiscordError` typé, et helpers
   `getOrNull` / `getOrThrow` / `onSuccess` / `onFailure`. Voir `rest/DiscordResponse.kt`,
   `components/DiscordError.kt`. Tests : `DiscordResponseTest`, `DiscordErrorDecodingTest`.
-- [ ] **Modèles entrants encore partiels.** `Channel`, `Member`, `User`, `Emoji` ont reçu des
-  défauts `= null` sur leurs champs optionnels pour que `.body<T>()` décode les payloads réels
-  (Discord omet souvent des champs). Mais ils restent incomplets côté champs couverts (threads,
-  `parent_id`, `permission_overwrites` sur `Channel` ; `premium_since`, `flags` sur `Member` ;
-  `global_name` sur `User`). À compléter au besoin.
-- [ ] **Incohérence de typage des ids.** `Snowflake` n'est utilisé que par `Channel`/`Message` ;
-  les autres modèles et tous les paramètres de fonctions REST utilisent `String`/`Long`. À
-  harmoniser si on veut un typage cohérent des ids.
+- [ ] **Modèles entrants encore partiels.** `Member` est désormais complété (`premium_since`, `flags`,
+  `pending`, `communication_disabled_until`… — Tier 1). Restent incomplets : `permission_overwrites` sur
+  `Channel`, `global_name` sur `User`, `Emoji` basique. À compléter au besoin.
+- [x] **Incohérence de typage des ids.** *Fait (2026-07-21, Tier 1) : `Snowflake` généralisé à tous les
+  modèles et à tous les paramètres d'id des fonctions REST (pagination incluse). Restent en `String`/`Int`
+  les non-ids (tokens, `custom_id`, bitfields de permissions, `session_id`, `ActivityParty.id`).*
 
 ## Divers (déjà noté dans CLAUDE.md, rappelé ici)
 

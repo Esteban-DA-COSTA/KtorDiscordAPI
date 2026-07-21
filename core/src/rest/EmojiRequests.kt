@@ -3,10 +3,11 @@ package ktordiscord.core
 import ktordiscord.components.CreateEmojiPayload
 import ktordiscord.components.Emoji
 import ktordiscord.components.ModifyEmojiPayload
+import ktordiscord.components.Snowflake
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-private fun DiscordClient.emojisUrl(guildId: String): String =
+private fun DiscordClient.emojisUrl(guildId: Snowflake): String =
     "$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.EMOJIS.text}"
 
 /**
@@ -15,7 +16,7 @@ private fun DiscordClient.emojisUrl(guildId: String): String =
  * @param guildId the id of the guild.
  * @return a [DiscordResponse] wrapping a list of emojis.
  */
-suspend fun DiscordClient.listGuildEmojis(guildId: String): DiscordResponse<List<Emoji>> {
+suspend fun DiscordClient.listGuildEmojis(guildId: Snowflake): DiscordResponse<List<Emoji>> {
     return httpClient.get(emojisUrl(guildId)) {
         buildDiscordHeader(token)
     }.decode()
@@ -28,7 +29,7 @@ suspend fun DiscordClient.listGuildEmojis(guildId: String): DiscordResponse<List
  * @param emojiId the id of the emoji.
  * @return a [DiscordResponse] wrapping the emoji.
  */
-suspend fun DiscordClient.getGuildEmoji(guildId: String, emojiId: String): DiscordResponse<Emoji> {
+suspend fun DiscordClient.getGuildEmoji(guildId: Snowflake, emojiId: Snowflake): DiscordResponse<Emoji> {
     return httpClient.get("${emojisUrl(guildId)}/$emojiId") {
         buildDiscordHeader(token)
     }.decode()
@@ -41,7 +42,7 @@ suspend fun DiscordClient.getGuildEmoji(guildId: String, emojiId: String): Disco
  * @param payload the emoji to create (name + base64 image data URI).
  * @return a [DiscordResponse] wrapping the created emoji.
  */
-suspend fun DiscordClient.createGuildEmoji(guildId: String, payload: CreateEmojiPayload): DiscordResponse<Emoji> {
+suspend fun DiscordClient.createGuildEmoji(guildId: Snowflake, payload: CreateEmojiPayload): DiscordResponse<Emoji> {
     return httpClient.post(emojisUrl(guildId)) {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -57,7 +58,7 @@ suspend fun DiscordClient.createGuildEmoji(guildId: String, payload: CreateEmoji
  * @param payload the fields to update.
  * @return a [DiscordResponse] wrapping the updated emoji.
  */
-suspend fun DiscordClient.modifyGuildEmoji(guildId: String, emojiId: String, payload: ModifyEmojiPayload): DiscordResponse<Emoji> {
+suspend fun DiscordClient.modifyGuildEmoji(guildId: Snowflake, emojiId: Snowflake, payload: ModifyEmojiPayload): DiscordResponse<Emoji> {
     return httpClient.patch("${emojisUrl(guildId)}/$emojiId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -71,7 +72,7 @@ suspend fun DiscordClient.modifyGuildEmoji(guildId: String, emojiId: String, pay
  * @param guildId the id of the guild.
  * @param emojiId the id of the emoji to delete.
  */
-suspend fun DiscordClient.deleteGuildEmoji(guildId: String, emojiId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.deleteGuildEmoji(guildId: Snowflake, emojiId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("${emojisUrl(guildId)}/$emojiId") {
         buildDiscordHeader(token)
     }.decodeEmpty()

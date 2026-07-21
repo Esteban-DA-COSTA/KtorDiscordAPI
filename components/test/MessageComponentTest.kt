@@ -1,6 +1,7 @@
 package ktordiscord.components
 
 import ktordiscord.components.enums.ButtonStyle
+import ktordiscord.components.enums.ComponentType
 import ktordiscord.components.interactions.InteractionData
 import ktordiscord.components.interactions.MessageComponentData
 import kotlinx.serialization.json.Json
@@ -64,6 +65,16 @@ class MessageComponentTest {
         )
         assertIs<MessageComponentData>(data)
         assertEquals("my-button", data.customId)
-        assertEquals(2, data.componentType)
+        assertEquals(ComponentType.BUTTON, data.componentType)
+    }
+
+    @Test
+    fun messageComponentInteractionDataFallsBackOnUnknownType() {
+        val data = wsJson.decodeFromString(
+            InteractionData.serializer(),
+            """{"type":3,"data":{"custom_id":"future","component_type":99}}"""
+        )
+        assertIs<MessageComponentData>(data)
+        assertEquals(ComponentType.UNKNOWN, data.componentType)
     }
 }

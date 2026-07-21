@@ -9,23 +9,23 @@ data class Activity(
     val type: Int,
     val url: String?,
     @SerialName("created_at") val createdAt: Int,
-    val timestamps: ktordiscord.components.ActivityTimeStamp?,
-    @SerialName("application_id") val applicationId: Long,
+    val timestamps: ActivityTimeStamp?,
+    @SerialName("application_id") val applicationId: Snowflake,
     val details: String?,
     val state: String?,
-    val emoji: ktordiscord.components.ActivityEmoji?,
-    val party: ktordiscord.components.ActivityParty?,
-    val assets: ktordiscord.components.ActivityAssets?,
-    val secrets: ktordiscord.components.ActivitySecret?,
+    val emoji: ActivityEmoji?,
+    val party: ActivityParty?,
+    val assets: ActivityAssets?,
+    val secrets: ActivitySecret?,
     val instance: Boolean?,
     val flags: Int?,
-    val buttons: ktordiscord.components.ActivityButton?
+    val buttons: ActivityButton?
 )
 
 @Serializable
 data class ActivityEmoji(
     val name: String,
-    val id: Long?,
+    val id: Snowflake?,
     val animated: Boolean?
 )
 

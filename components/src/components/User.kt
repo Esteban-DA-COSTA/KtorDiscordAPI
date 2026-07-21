@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
-    val id: Long,
+    val id: Snowflake,
     val username: String? = null,
     val discriminator: String? = null,
     val avatar: String? = null,
@@ -29,5 +29,5 @@ data class User(
  */
 @Serializable
 data class CreateDMPayload(
-    @SerialName("recipient_id") var recipientId: String,
+    @SerialName("recipient_id") var recipientId: Snowflake,
 )

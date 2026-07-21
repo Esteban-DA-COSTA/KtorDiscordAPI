@@ -2,6 +2,7 @@ package ktordiscord.components.interactions
 
 import ktordiscord.components.*
 import ktordiscord.components.enums.ApplicationCommandTypes
+import ktordiscord.components.enums.ComponentType
 import ktordiscord.components.enums.InteractionTypes
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -86,7 +87,7 @@ data class MessageComponentData(
     @SerialName("custom_id")
     val customId: String,
     @SerialName("component_type")
-    val componentType: Int = 0, // TODO Enum componentType
+    val componentType: ComponentType = ComponentType.UNKNOWN,
 ) : InteractionData()
 
 @Serializable

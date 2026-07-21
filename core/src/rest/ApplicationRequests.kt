@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 
-suspend fun DiscordClient.getApplication(applicationId: String): DiscordResponse<Application> {
+suspend fun DiscordClient.getApplication(applicationId: Snowflake): DiscordResponse<Application> {
     return httpClient.get("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$applicationId") {
         buildDiscordHeader(token)
     }.decode()

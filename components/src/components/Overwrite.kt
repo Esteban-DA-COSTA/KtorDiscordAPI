@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Overwrite(
-    val id: String,
+    val id: Snowflake,
     val type: Int,
     val allow: String? = null,
     val deny: String? = null,

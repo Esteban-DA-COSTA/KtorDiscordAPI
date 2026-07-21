@@ -5,6 +5,7 @@ import ktordiscord.components.interactions.ApplicationCommandPayload
 import ktordiscord.components.interactions.ApplicationCommandPermission
 import ktordiscord.components.interactions.ApplicationCommandPermissionsPayload
 import ktordiscord.components.interactions.GuildApplicationCommandPermissions
+import ktordiscord.components.Snowflake
 import io.ktor.client.request.*
 import io.ktor.http.*
 
@@ -13,7 +14,7 @@ private val DiscordClient.globalCommandsUrl: String
     get() = "$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$applicationId/${DiscordEndpoints.COMMANDS.text}"
 
 // Base path for the bot's own guild commands: /applications/{appId}/guilds/{guildId}/commands
-private fun DiscordClient.guildCommandsUrl(guildId: String): String =
+private fun DiscordClient.guildCommandsUrl(guildId: Snowflake): String =
     "$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$applicationId/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.COMMANDS.text}"
 
 //#region Global commands
@@ -27,21 +28,21 @@ suspend fun DiscordClient.createGlobalApplicationCommand(name: String, init: App
     }.decode()
 }
 
-suspend fun DiscordClient.getGlobalApplicationCommands(applicationId: String): DiscordResponse<List<ApplicationCommand>> {
+suspend fun DiscordClient.getGlobalApplicationCommands(applicationId: Snowflake): DiscordResponse<List<ApplicationCommand>> {
     return httpClient.get("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$applicationId/${DiscordEndpoints.COMMANDS.text}") {
         buildDiscordHeader(token)
     }.decode()
 }
 
 /** Fetch a single global application command by its id. */
-suspend fun DiscordClient.getGlobalApplicationCommand(commandId: String): DiscordResponse<ApplicationCommand> {
+suspend fun DiscordClient.getGlobalApplicationCommand(commandId: Snowflake): DiscordResponse<ApplicationCommand> {
     return httpClient.get("$globalCommandsUrl/$commandId") {
         buildDiscordHeader(token)
     }.decode()
 }
 
 /** Edit an existing global application command. Only the fields set in [init] are sent. */
-suspend fun DiscordClient.editGlobalApplicationCommand(commandId: String, init: ApplicationCommandPayload.() -> Unit): DiscordResponse<ApplicationCommand> {
+suspend fun DiscordClient.editGlobalApplicationCommand(commandId: Snowflake, init: ApplicationCommandPayload.() -> Unit): DiscordResponse<ApplicationCommand> {
     val appCommand = ApplicationCommandPayload().apply(init)
     return httpClient.patch("$globalCommandsUrl/$commandId") {
         buildDiscordHeader(token)
@@ -51,7 +52,7 @@ suspend fun DiscordClient.editGlobalApplicationCommand(commandId: String, init: 
 }
 
 /** Delete a global application command. */
-suspend fun DiscordClient.deleteGlobalApplicationCommand(commandId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.deleteGlobalApplicationCommand(commandId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("$globalCommandsUrl/$commandId") {
         buildDiscordHeader(token)
     }.decodeEmpty()
@@ -73,7 +74,7 @@ suspend fun DiscordClient.bulkOverwriteGlobalApplicationCommands(commands: List<
 
 //#region Guild commands
 
-suspend fun DiscordClient.createGuildApplicationCommand(guildId: String, name: String, init: ApplicationCommandPayload.() -> Unit): DiscordResponse<ApplicationCommand> {
+suspend fun DiscordClient.createGuildApplicationCommand(guildId: Snowflake, name: String, init: ApplicationCommandPayload.() -> Unit): DiscordResponse<ApplicationCommand> {
     val appCommand = ApplicationCommandPayload(name = name).apply(init)
     return httpClient.post(guildCommandsUrl(guildId)) {
         buildDiscordHeader(token)
@@ -82,21 +83,21 @@ suspend fun DiscordClient.createGuildApplicationCommand(guildId: String, name: S
     }.decode()
 }
 
-suspend fun DiscordClient.getGuildApplicationCommands(guildId: String): DiscordResponse<List<ApplicationCommand>> {
+suspend fun DiscordClient.getGuildApplicationCommands(guildId: Snowflake): DiscordResponse<List<ApplicationCommand>> {
     return httpClient.get(guildCommandsUrl(guildId)) {
         buildDiscordHeader(token)
     }.decode()
 }
 
 /** Fetch a single guild application command by its id. */
-suspend fun DiscordClient.getGuildApplicationCommand(guildId: String, commandId: String): DiscordResponse<ApplicationCommand> {
+suspend fun DiscordClient.getGuildApplicationCommand(guildId: Snowflake, commandId: Snowflake): DiscordResponse<ApplicationCommand> {
     return httpClient.get("${guildCommandsUrl(guildId)}/$commandId") {
         buildDiscordHeader(token)
     }.decode()
 }
 
 /** Edit an existing guild application command. Only the fields set in [init] are sent. */
-suspend fun DiscordClient.editGuildApplicationCommand(guildId: String, commandId: String, init: ApplicationCommandPayload.() -> Unit): DiscordResponse<ApplicationCommand> {
+suspend fun DiscordClient.editGuildApplicationCommand(guildId: Snowflake, commandId: Snowflake, init: ApplicationCommandPayload.() -> Unit): DiscordResponse<ApplicationCommand> {
     val appCommand = ApplicationCommandPayload().apply(init)
     return httpClient.patch("${guildCommandsUrl(guildId)}/$commandId") {
         buildDiscordHeader(token)
@@ -106,7 +107,7 @@ suspend fun DiscordClient.editGuildApplicationCommand(guildId: String, commandId
 }
 
 /** Delete a guild application command. */
-suspend fun DiscordClient.deleteGuildApplicationCommand(guildId: String, commandId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.deleteGuildApplicationCommand(guildId: Snowflake, commandId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("${guildCommandsUrl(guildId)}/$commandId") {
         buildDiscordHeader(token)
     }.decodeEmpty()
@@ -116,7 +117,7 @@ suspend fun DiscordClient.deleteGuildApplicationCommand(guildId: String, command
  * Overwrite **all** commands of a guild at once. Commands absent from [commands] are deleted.
  * Guild commands propagate instantly, which makes this the go-to for local development.
  */
-suspend fun DiscordClient.bulkOverwriteGuildApplicationCommands(guildId: String, commands: List<ApplicationCommandPayload>): DiscordResponse<List<ApplicationCommand>> {
+suspend fun DiscordClient.bulkOverwriteGuildApplicationCommands(guildId: Snowflake, commands: List<ApplicationCommandPayload>): DiscordResponse<List<ApplicationCommand>> {
     return httpClient.put(guildCommandsUrl(guildId)) {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -129,14 +130,14 @@ suspend fun DiscordClient.bulkOverwriteGuildApplicationCommands(guildId: String,
 //#region Command permissions
 
 /** Fetch the permissions for **all** commands of the bot in a guild. */
-suspend fun DiscordClient.getGuildApplicationCommandPermissions(guildId: String): DiscordResponse<List<GuildApplicationCommandPermissions>> {
+suspend fun DiscordClient.getGuildApplicationCommandPermissions(guildId: Snowflake): DiscordResponse<List<GuildApplicationCommandPermissions>> {
     return httpClient.get("${guildCommandsUrl(guildId)}/${DiscordEndpoints.PERMISSIONS.text}") {
         buildDiscordHeader(token)
     }.decode()
 }
 
 /** Fetch the permissions for a single command in a guild. */
-suspend fun DiscordClient.getApplicationCommandPermissions(guildId: String, commandId: String): DiscordResponse<GuildApplicationCommandPermissions> {
+suspend fun DiscordClient.getApplicationCommandPermissions(guildId: Snowflake, commandId: Snowflake): DiscordResponse<GuildApplicationCommandPermissions> {
     return httpClient.get("${guildCommandsUrl(guildId)}/$commandId/${DiscordEndpoints.PERMISSIONS.text}") {
         buildDiscordHeader(token)
     }.decode()
@@ -148,7 +149,7 @@ suspend fun DiscordClient.getApplicationCommandPermissions(guildId: String, comm
  * Note: this endpoint requires a **bearer token** with the `applications.commands.permissions.update`
  * scope, not the bot token — see the Discord docs.
  */
-suspend fun DiscordClient.editApplicationCommandPermissions(guildId: String, commandId: String, permissions: List<ApplicationCommandPermission>): DiscordResponse<GuildApplicationCommandPermissions> {
+suspend fun DiscordClient.editApplicationCommandPermissions(guildId: Snowflake, commandId: Snowflake, permissions: List<ApplicationCommandPermission>): DiscordResponse<GuildApplicationCommandPermissions> {
     return httpClient.put("${guildCommandsUrl(guildId)}/$commandId/${DiscordEndpoints.PERMISSIONS.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)

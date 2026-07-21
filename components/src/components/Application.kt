@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Application(
-    val id: Long,
+    val id: Snowflake,
     val name: String?,
     val icon: String?,
     val description: String?,
@@ -14,16 +14,16 @@ data class Application(
     @SerialName("bot_require_code_grant") val botRequireCodeGrant: Boolean?,
     @SerialName("terms_of_service_url") val termsOfServiceUrl: String?,
     @SerialName("privacy_policy_url") val privacyPolicyUrl: String?,
-    val owner: ktordiscord.components.User?,
+    val owner: User?,
     @SerialName("verify_key") val verifyKey: String?,
-    val team: ktordiscord.components.Team?,
-    @SerialName("guild_id") val guildId: Long?,
-    @SerialName("primary_sku_id") val primarySkuId: Long?,
+    val team: Team?,
+    @SerialName("guild_id") val guildId: Snowflake?,
+    @SerialName("primary_sku_id") val primarySkuId: Snowflake?,
     val slug: String?,
     @SerialName("cover_image") val coverImage: String?,
     val flags: Int?,
     val tags: List<String>?,
-    @SerialName("install_params") val installParams: ktordiscord.components.InstalParams?,
+    @SerialName("install_params") val installParams: InstalParams?,
     @SerialName("custom_install_url") val customInstallUrl: String?,
     @SerialName("role_connections_verification_url") val roleConnectionsVerificationUrl: String?
     )

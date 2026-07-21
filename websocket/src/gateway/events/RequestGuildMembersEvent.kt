@@ -1,5 +1,6 @@
 package ktordiscord.gateway.events
 
+import ktordiscord.components.Snowflake
 import ktordiscord.gateway.OPCode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,11 +16,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class RequestGuildMembersData(
-    @SerialName("guild_id") val guildId: String,
+    @SerialName("guild_id") val guildId: Snowflake,
     val query: String? = "",
     val limit: Int = 0,
     val presences: Boolean? = null,
-    @SerialName("user_ids") val userIds: List<String>? = null,
+    @SerialName("user_ids") val userIds: List<Snowflake>? = null,
     val nonce: String? = null
 )
 

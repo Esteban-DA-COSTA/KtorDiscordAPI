@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
 import ktordiscord.components.Message
 import ktordiscord.components.MessagePayload
+import ktordiscord.components.Snowflake
 import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.interactions.ApplicationCommandData
 import ktordiscord.components.interactions.Interaction
@@ -117,7 +118,7 @@ class DiscordClient private constructor(internal val token: String) {
     // Command definitions declared via `on(name) { define { } }`, pushed to Discord on login().
     private class CommandDefinition(
         val name: String,
-        val guildId: String?,
+        val guildId: Snowflake?,
         val init: ktordiscord.components.interactions.ApplicationCommandPayload.() -> Unit,
     )
 
@@ -150,7 +151,9 @@ class DiscordClient private constructor(internal val token: String) {
     internal var apiVersion = 10
     internal var discordURL = "https://discord.com/api/v$apiVersion"
 
-    internal lateinit var applicationId: String
+    // Resolved once by [create] before the instance is handed out (the constructor is private, so the
+    // sentinel is never observed). `Snowflake` is an inline class, so it cannot be `lateinit`.
+    internal var applicationId: Snowflake = Snowflake("")
     private lateinit var interactionManager: InteractionManager
 
     companion object {
@@ -168,7 +171,7 @@ class DiscordClient private constructor(internal val token: String) {
          */
         suspend fun create(token: String): DiscordClient {
             val client = DiscordClient(token)
-            client.applicationId = client.getMeApplicationId().value
+            client.applicationId = client.getMeApplicationId()
             client.interactionManager = InteractionManager.create(client)
             return client
         }
@@ -186,7 +189,7 @@ class DiscordClient private constructor(internal val token: String) {
      * @param init the message builder function
      * @return a [DiscordResponse] wrapping the created message
      */
-    suspend fun sendMessage(channelId: String, init: ResponseScope.() -> Unit): DiscordResponse<Message> {
+    suspend fun sendMessage(channelId: Snowflake, init: ResponseScope.() -> Unit): DiscordResponse<Message> {
         val message = ResponseScope(this).apply(init).build()
         return createChannelMessage(channelId, message)
     }
@@ -200,7 +203,7 @@ class DiscordClient private constructor(internal val token: String) {
      */
     suspend fun respondWithMessage(interaction: Interaction, init: (MessagePayload.() -> Unit)) {
         createInteractionResponse(
-            interaction.id.value,
+            interaction.id,
             interaction.token,
             InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
             MessagePayload().apply(init)
@@ -253,7 +256,7 @@ class DiscordClient private constructor(internal val token: String) {
      * @param guildId the guild whose members are requested.
      * @param init the request builder function.
      */
-    suspend fun requestGuildMembers(guildId: String, init: RequestGuildMembersScope.() -> Unit = {}) {
+    suspend fun requestGuildMembers(guildId: Snowflake, init: RequestGuildMembersScope.() -> Unit = {}) {
         wssSession.sendRequestGuildMembers(RequestGuildMembersScope(guildId).apply(init).build())
     }
 
@@ -368,7 +371,7 @@ class DiscordClient private constructor(internal val token: String) {
     // Called by CommandScope.define to record a command definition, synced to Discord on login().
     internal fun registerCommandDefinition(
         name: String,
-        guildId: String?,
+        guildId: Snowflake?,
         init: ktordiscord.components.interactions.ApplicationCommandPayload.() -> Unit,
     ) {
         pendingCommandDefinitions.add(CommandDefinition(name, guildId, init))

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Role(
-    val id: Long,
+    val id: Snowflake,
     val name: String,
     val description: String?,
     val color: Int,
@@ -22,9 +22,9 @@ data class Role(
 
 @Serializable
 data class RoleTag(
-    @SerialName("bot_id") val botId: Long?,
-    @SerialName("integration_id") val integrationId: Long? = null,
-    @SerialName("subscription_listing_id") val subscriptionListingId: Long? = null
+    @SerialName("bot_id") val botId: Snowflake?,
+    @SerialName("integration_id") val integrationId: Snowflake? = null,
+    @SerialName("subscription_listing_id") val subscriptionListingId: Snowflake? = null
 )
 
 @Serializable
@@ -44,6 +44,6 @@ data class RolePayload(
  */
 @Serializable
 data class RolePositionPayload(
-    var id: String,
+    var id: Snowflake,
     var position: Int? = null,
 )

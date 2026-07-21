@@ -56,7 +56,7 @@ class RestPayloadEncodingTest {
     fun bulkDeleteMessagesPayloadWrapsIdsUnderMessages() {
         val root = restJson.encodeToJsonElement(
             BulkDeleteMessagesPayload.serializer(),
-            BulkDeleteMessagesPayload(listOf("111", "222")),
+            BulkDeleteMessagesPayload(listOf(Snowflake("111"), Snowflake("222"))),
         ).jsonObject
         assertEquals(listOf("111", "222"), root["messages"]!!.jsonArray.map { it.jsonPrimitive.content })
     }
@@ -85,7 +85,7 @@ class RestPayloadEncodingTest {
     fun createDMPayloadUsesRecipientIdKey() {
         val root = restJson.encodeToJsonElement(
             CreateDMPayload.serializer(),
-            CreateDMPayload(recipientId = "42"),
+            CreateDMPayload(recipientId = Snowflake("42")),
         ).jsonObject
         assertEquals("42", root["recipient_id"]!!.jsonPrimitive.content)
     }
