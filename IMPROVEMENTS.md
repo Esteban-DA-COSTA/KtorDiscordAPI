@@ -8,7 +8,7 @@ Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publicat
 
 ### Tier 1 — Bloquant : figer l'API publique
 
-À traiter **avant** la beta (breaking change sinon).
+À traiter **avant** la beta (breaking change sinon). 
 
 - [x] **Harmoniser le typage des ids sur `Snowflake` partout.** Cf. *« IDs `Long`/`String` dans les modèles »* et *« Incohérence de typage des ids »*. *Fait (2026-07-21) : tous les ids des modèles (`Guild`/`Role`/`User`/`Member`/`Emoji`/`Application`/`Team`/`Sticker`/`Activity`/`Overwrite`/`Message.channelId`…), des payloads sortants et des ~60 signatures REST (incluant la pagination `before`/`after`/`around`) passent en `Snowflake`. Sites internes repointés (`applicationId`, `interaction.id`…), `.value` supprimés. Non convertis (identifiants non-snowflake) : tokens, `custom_id`, `emoji`, `session_id`, `ActivityParty.id`. Bitfields de permissions laissés en `String`. `applicationId` : sentinelle `Snowflake("")` (inline class ⇒ pas de `lateinit`).*
 - [x] **Compléter les modèles `Message` et `Member` sur les champs courants.** Cf. *« Modèles `Member`/`Message` partiels »*. *Fait (2026-07-21) : `Message` gagne `mention_everyone`, `mentions`, `mention_roles`, `reactions`, `pinned`, `webhook_id`, `type` (nouvel enum `MessageType`), `attachments`, `message_reference` (nouveau modèle `MessageReference`), `referenced_message`, `sticker_items` (nouveau modèle `StickerItem`), `flags`. `Member` gagne `banner`, `premium_since`, `pending`, `flags`, `communication_disabled_until`. `Attachment` rendu tolérant (champs optionnels nullables/défauts). **Reporté (Tier 3)** : `components` en réception (sérialiseur `MessageComponent` write-only) et `nonce` (type mixte int/string → risque de crash de décodage).*
