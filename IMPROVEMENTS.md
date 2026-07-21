@@ -17,19 +17,19 @@ Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publicat
 ### Tier 2 — Fortement recommandé
 
 - [x] **Éviction des `componentHandlers`.** Cf. *« Callbacks de composants en mémoire »*. *Fait (2026-07-21) : le registre est scindé par intention. Les handlers déclarés (`on(InteractionKind.Component, id)`) sont matchés par **préfixe** (`custom_id.substringBefore(':')`, `:` réservé — état lu via `ComponentInteractionScope.arg`) → modèle persistant type JDA, survit au redémarrage. Les closures éphémères de `button(...).click { }` vont dans un `BoundedHandlerCache` **LRU + TTL** (défauts 1024 / 15 min, configurables via `create`) → plus de croissance illimitée. Garde `custom_id` ≤ 100 car. ajoutée. Tests : `core/test/ComponentRoutingTest.kt`.*
-- [ ] **Packaging release** (hors dette listée ci-dessous, prérequis de publication) :
-  - [ ] **Versioning** : aucun numéro de version n'existe (`project.yaml` / `module.yaml`). Définir `1.0.0-beta`.
-  - [ ] **Publication** : rien de configuré. **JitPack** = chemin le plus rapide pour une beta (tag Git, zéro config Maven Central). `core` est déjà une façade `exported` correcte.
-  - [ ] **Documentation d'entrée** : pas de `README.md` racine ; `Writerside/topics/Core_module.md` vide et Home en placeholder « My app ». Les guides Basic_usage / Interactions / Events sont déjà corrects.
+- [~] **Packaging release** (hors dette listée ci-dessous, prérequis de publication) :
+  - [x] **Versioning** : `1.0.0-beta` défini dans `lib.module-template.yaml` (source unique, propagée aux 3 modules publiés).
+  - [x] **Publication** : configurée sur **GitHub Packages** (`maven.pkg.github.com/Esteban-DA-COSTA/KtorDiscordAPI`, artefact `kda` = module `core`, `components`/`websocket` en transitif). *Choix retenu : GitHub Packages plutôt que JitPack.*
+  - [ ] **Documentation d'entrée** : `README.md` racine **fait**. Restent : `Writerside/topics/Core_module.md` **vide** et Home Writerside en placeholder « My app ». Les guides Basic_usage / Interactions / Events sont déjà corrects. → suivi **KDA-27**.
 
 ### Tier 3 — Assumable en « known limitations » (post-beta)
 
 À **documenter** honnêtement plutôt qu'à implémenter pour la beta :
 
-- **Voice State Update (OP 4) sortant** (support vocal) — cf. section « Commandes Gateway sortantes ».
-- **Select menus / modals** — cf. *« Composants limités aux boutons »* (+ *« Sérialiseur `MessageComponent` write-only »*).
-- **Persistance des handlers au redémarrage**, **catch-all events**, **ordre des multi-handlers** — cf. sections « Routeur d'events » / « Routeur d'interactions ».
-- **Modèles entrants REST encore partiels** (`permission_overwrites`, `global_name`, `Emoji`…) — cf. section « Couverture des endpoints REST ».
+- **Voice State Update (OP 4) sortant** (support vocal) — cf. section « Commandes Gateway sortantes ». → **KDA-31**.
+- **Select menus / modals** — cf. *« Composants limités aux boutons »* (+ *« Sérialiseur `MessageComponent` write-only »*). → **KDA-28**.
+- **Persistance des handlers au redémarrage**, **catch-all events**, **ordre des multi-handlers** — cf. sections « Routeur d'events » / « Routeur d'interactions ». → **KDA-29**.
+- **Modèle entrant `User` partiel** (`global_name` uniquement — `permission_overwrites` et `Emoji` désormais complets) — cf. section « Couverture des endpoints REST ». → **KDA-30**.
 
 ### Ordre de bataille
 
@@ -37,12 +37,13 @@ Priorisation (2026-07-21) de la dette résiduelle restante en vue d'une publicat
 2. ~~Compléter `Message` + `Member`~~ ✅ fait (2026-07-21)
 3. ~~Enum `ComponentType`~~ ✅ fait (2026-07-21)
 4. ~~Éviction `componentHandlers`~~ ✅ fait (2026-07-21)
-5. Version + JitPack + README + `Core_module.md`
-6. Rédiger la section « Known limitations » (Tier 3)
+5. ~~Version + publication + README~~ ✅ fait (2026-07-21) — reste `Core_module.md` + Home Writerside (**KDA-27**)
+6. Rédiger la section « Known limitations » (Tier 3) — **KDA-27**
 
 **Tier 1 livré (2026-07-21).** L'API publique est figée côté types d'ids, modèles centraux et enum de
-composant. **Fuite `componentHandlers` corrigée (2026-07-21).** Reste avant la beta : le packaging/doc
-(version + publication + README + `Core_module.md`).
+composant. **Fuite `componentHandlers` corrigée (2026-07-21).** Packaging livré (version `1.0.0-beta`,
+publication GitHub Packages, README). Reste avant la beta : la doc `Core_module.md` + Home Writerside et
+la section « Known limitations » (**KDA-27**).
 
 > Note : le piège « crash en DM sur `MESSAGE_CREATE`/`MESSAGE_UPDATE` » qui figurait dans `CLAUDE.md` était
 > déjà **obsolète** (décodage nullable dans `Event.kt`, corrigé via le point 3) — `CLAUDE.md` a été mis à jour.
@@ -82,14 +83,16 @@ composant. **Fuite `componentHandlers` corrigée (2026-07-21).** Reste avant la 
 Système `discordClient.on("cmd") { respond { button(...).click { } } }` : routeur commande→handler + boutons chaînables (composants de message, dispatch `MESSAGE_COMPONENT`, `defer`/`editOriginal`/`update`, `ephemeral`). Voir `core/src/interactions/`, `components/src/components/MessageComponent.kt`. Dette résiduelle :
 
 - [x] **Callbacks de composants en mémoire.** *Corrigé (2026-07-21).* Deux registres dans `DiscordClient` : `componentHandlers` déclaré (`on(InteractionKind.Component, prefix)`, matché par préfixe, `:` réservé, état via `arg` — persistant, survit au redémarrage) et `ephemeralComponentHandlers` (`BoundedHandlerCache` LRU + TTL) pour les closures `button(...).click { }`. La croissance illimitée et la fuite de closures sont éliminées. Reste (Tier 3) : la persistance des handlers **éphémères** au redémarrage — par nature perdus, à documenter.
-- [ ] **Composants limités aux boutons.** Modèle `MessageComponent` scellé prêt à étendre → select menus (`type 3`), text inputs / modals (`MODAL` + `MODAL_SUBMIT`).
+- [ ] **Composants limités aux boutons.** Modèle `MessageComponent` scellé prêt à étendre → select menus (`type 3`), text inputs / modals (`MODAL` + `MODAL_SUBMIT`). → **KDA-28**.
 - [x] **`MessageComponentData.componentType` reste un `Int`.** → enum `ComponentType` sérialisé par entier (pattern `IntEnumSerializer`). *Fait (2026-07-21, Tier 1) : enum `ComponentType` (`ACTION_ROW`…`CHANNEL_SELECT` + `UNKNOWN(-1)`).*
 - [x] **Pas de bloc `define { }`.** L'ergonomie `respond { }` a été retenue pour permettre plus tard un bloc `define { }` créant l'`ApplicationCommand` dans la même lambda `on`. *Fait : `on(name) { }` reçoit désormais un `CommandScope` (config, exécuté à l'enregistrement) avec `define(guildId?) { }` (global ou guilde), `handle { }` (dispatch dynamique complet), et les sucres `respond { }` / `defer()`. Les `define` sont collectés puis synchronisés en **bulk-overwrite** au `login()`. Endpoints REST Application Command complétés au passage (global get/edit/delete/bulk, guild create/get/list/edit/delete/bulk, permissions get/edit) + modèles de permissions.*
-- [ ] **Sérialiseur `MessageComponent` write-only.** `deserialize` lève une erreur (on n'émet que des composants). À compléter si un jour on doit décoder des composants entrants complets.
+- [ ] **Sérialiseur `MessageComponent` write-only.** `deserialize` lève une erreur (on n'émet que des composants). À compléter si un jour on doit décoder des composants entrants complets. → **KDA-28**.
 
 ## Routeur d'events Gateway (v1 livrée)
 
 `discordClient.on<MessageCreateEvent> { reply { } }` : routeur réifié event→handler(s), multi-listeners, boucle de dispatch interne symétrique de celle des interactions, scope `EventScope<T>` avec `reply { }` réutilisant `ResponseScope` (boutons `.click` gratuits sur un message d'event). Voir `core/src/events/EventScope.kt`, `core/src/DiscordClient.kt`. Dette résiduelle :
+
+Les quatre points ci-dessous sont regroupés dans **KDA-29** (dette résiduelle du routeur d'events).
 
 - [ ] **Handlers d'events en mémoire.** `eventHandlers` (classe d'event → handlers) vit dans `DiscordClient` : perdu au redémarrage. Pas de désenregistrement (`off`).
 - [ ] **Match par classe exacte.** Le routage matche `event::class` exactement : pas de handler « catch-all » (sur `DispatchEvent`) ni de dispatch par hiérarchie. À étendre si besoin.
@@ -110,7 +113,7 @@ repointé sur `BotActivity` et `status` typé `StatusTypeEnum`. Helper d'envoi g
 
 - [ ] **Voice State Update (OP 4) sortant.** Non implémenté. → event sortant + payload
   (`guild_id`, `channel_id?`, `self_mute`, `self_deaf`) sur la base `OutgoingEventSerializer`, et
-  méthode publique sur `DiscordClient` (rejoindre/quitter un salon vocal).
+  méthode publique sur `DiscordClient` (rejoindre/quitter un salon vocal). → **KDA-31**.
 - [x] **Réception des `GUILD_MEMBERS_CHUNK`.** La commande OP 8 est envoyée mais la réponse n'est pas
   décodée : ajouter `GUILD_MEMBERS_CHUNK` dans `DispatchEvents`, un modèle `GuildMembersChunk`, et la
   branche correspondante dans `EventSerializer.decodeDispatchEvent` (`Event.kt`) pour rendre
@@ -158,9 +161,9 @@ d'encodage/décodage : `RestPayloadEncodingTest`, `RestModelDecodingTest`. Dette
   centralisée des 4xx/5xx avec corps d'erreur `DiscordError` typé, et helpers
   `getOrNull` / `getOrThrow` / `onSuccess` / `onFailure`. Voir `rest/DiscordResponse.kt`,
   `components/DiscordError.kt`. Tests : `DiscordResponseTest`, `DiscordErrorDecodingTest`.
-- [ ] **Modèles entrants encore partiels.** `Member` est désormais complété (`premium_since`, `flags`,
-  `pending`, `communication_disabled_until`… — Tier 1). Restent incomplets : `permission_overwrites` sur
-  `Channel`, `global_name` sur `User`, `Emoji` basique. À compléter au besoin.
+- [ ] **Modèle entrant `User` partiel.** `Member` complété (Tier 1), `permission_overwrites` sur `Channel`
+  et `Emoji` désormais **complets** (vérifié 2026-07-21). Reliquat unique : `global_name` sur `User`
+  (`components/src/components/User.kt`). → **KDA-30**.
 - [x] **Incohérence de typage des ids.** *Fait (2026-07-21, Tier 1) : `Snowflake` généralisé à tous les
   modèles et à tous les paramètres d'id des fonctions REST (pagination incluse). Restent en `String`/`Int`
   les non-ids (tokens, `custom_id`, bitfields de permissions, `session_id`, `ActivityParty.id`).*
