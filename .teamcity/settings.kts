@@ -205,12 +205,15 @@ object Qodana_1 : BuildType({
 
 object PublishPackages : BuildType({
     name = "Publish packages"
-    description = "Écrase creds.properties avec les creds GitHub Packages puis lance `kotlin publish github`"
+    description = "Sur un tag v*, publie les modules sur GitHub Packages puis crée la release GitHub"
 
     params {
         // Username GitHub Packages (public, pas secret) — propriétaire du repo par défaut.
         param("packages.username", "Esteban-DA-COSTA")
-        // env.GH_TOKEN est hérité du projet.
+        // env.GH_TOKEN est hérité du projet (gh CLI le lit nativement pour créer la release).
+        // Renseignés à l'exécution par le step "Resolve version" (via setParameter).
+        param("release.tag", "")
+        param("release.version", "")
     }
 
     vcs {
@@ -219,6 +222,20 @@ object PublishPackages : BuildType({
     }
 
     steps {
+        script {
+            name = "Resolve version from tag"
+            id = "resolve_version"
+            scriptContent = """
+                set -e
+                TAG="%teamcity.build.branch%"
+                VERSION="${'$'}{TAG#v}"
+                echo "Tag=${'$'}TAG  Version=${'$'}VERSION"
+                # Injecte la version du tag dans la source unique (indentation 4 espaces sous publishing:)
+                sed -i "s/^    version:.*/    version: ${'$'}VERSION/" lib.module-template.yaml
+                echo "##teamcity[setParameter name='release.tag' value='${'$'}TAG']"
+                echo "##teamcity[setParameter name='release.version' value='${'$'}VERSION']"
+            """.trimIndent()
+        }
         script {
             name = "Set credentials"
             id = "set_credentials"
@@ -236,6 +253,27 @@ object PublishPackages : BuildType({
                 chmod +x ./kotlin
                 ./kotlin publish github
             """.trimIndent()
+        }
+        script {
+            name = "Create GitHub release"
+            id = "create_release"
+            scriptContent = """
+                set -e
+                gh release create "%release.tag%" \
+                  --repo Esteban-DA-COSTA/KtorDiscordAPI \
+                  --title "%release.tag%" \
+                  --generate-notes \
+                  "components/build/libs/components-jvm.jar#components-%release.version%.jar" \
+                  "websocket/build/libs/websocket-jvm.jar#websocket-%release.version%.jar" \
+                  "core/build/libs/core-jvm.jar#core-%release.version%.jar"
+            """.trimIndent()
+        }
+    }
+
+    triggers {
+        vcs {
+            // Se déclenche sur les tags v* — nécessite `+:refs/tags/(v*)` dans le branch spec du VCS root.
+            branchFilter = "+:v*"
         }
     }
 
