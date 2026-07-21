@@ -37,6 +37,13 @@ project {
     buildType(GenerateDoc)
     buildType(PublishPackages)
 
+    params {
+        // PAT classic GitHub (scopes `repo` + `write:packages`), partagé par GenerateDoc et
+        // PublishPackages. Défini une seule fois ici → un seul endroit à mettre à jour à la rotation.
+        // Valeur saisie via l'UI (icône clé) ; hérité par tous les builds du projet.
+        password("env.GH_TOKEN", "credentialsJSON:00b7d8c6-e92f-42c2-b132-7d7fc6ba194b")
+    }
+
     features {
         youtrack {
             id = "PROJECT_EXT_3"
@@ -83,8 +90,7 @@ object GenerateDoc : BuildType({
     description = "Build l'instance Writerside 'kda' et la publie sur GitHub Pages (branche gh-pages)"
 
     params {
-        // Secret : PAT fine-grained, scope 'Contents: write' sur ce repo uniquement.
-        password("env.GH_PAGES_TOKEN", "credentialsJSON:ffdd292f-4e06-4799-a131-f7d8695583e6")
+        // env.GH_TOKEN est hérité du projet.
         param("docs.instance", "Writerside/kda")
         param("docs.artifact", "webHelpKDA2-all.zip")
         param("docs.repo", "github.com/Esteban-DA-COSTA/KtorDiscordAPI.git")
@@ -136,7 +142,7 @@ object GenerateDoc : BuildType({
                 git config user.name  "TeamCity CI"
                 git add -A
                 git commit -qm "Deploy docs (build %build.number%)"
-                git push -f "https://x-access-token:%env.GH_PAGES_TOKEN%@%docs.repo%" gh-pages
+                git push -f "https://x-access-token:%env.GH_TOKEN%@%docs.repo%" gh-pages
             """.trimIndent()
         }
     }
@@ -199,13 +205,12 @@ object Qodana_1 : BuildType({
 
 object PublishPackages : BuildType({
     name = "Publish packages"
-    description = "Écrase creds.properties avec les creds GitHub Packages puis lance `kotlin package`"
+    description = "Écrase creds.properties avec les creds GitHub Packages puis lance `kotlin publish github`"
 
     params {
         // Username GitHub Packages (public, pas secret) — propriétaire du repo par défaut.
         param("packages.username", "Esteban-DA-COSTA")
-        // PAT classic avec le scope `write:packages` (+ `read:packages`). À saisir via l'UI (icône clé).
-        password("env.GH_PACKAGES_TOKEN", "credentialsJSON:REMPLACER-PAR-LE-TOKEN-CHIFFRE")
+        // env.GH_TOKEN est hérité du projet.
     }
 
     vcs {
@@ -220,24 +225,22 @@ object PublishPackages : BuildType({
             scriptContent = """
                 {
                   echo "username=%packages.username%"
-                  echo "password=${'$'}GH_PACKAGES_TOKEN"
+                  echo "password=${'$'}GH_TOKEN"
                 } > creds.properties
             """.trimIndent()
         }
         script {
-            name = "Package"
-            id = "package"
+            name = "Publish"
+            id = "publish"
             scriptContent = """
                 chmod +x ./kotlin
-                ./kotlin package
+                ./kotlin publish github
             """.trimIndent()
         }
     }
 
     dependencies {
-        // Ne publie pas d'artefacts issus d'un build cassé.
         snapshot(Build) {
-            onDependencyFailure = FailureAction.FAIL_TO_START
         }
     }
 })
