@@ -1,6 +1,6 @@
 package ktordiscord.core
 
-import ktordiscord.builders.DiscordMessageBuilder
+import ktordiscord.builders.DiscordDsl
 import ktordiscord.builders.embed
 import ktordiscord.components.ActionRow
 import ktordiscord.components.Button
@@ -21,7 +21,7 @@ private const val EPHEMERAL_FLAG = 1 shl 6
  * fields (content, embeds…) and adds interactive components: [button] returns a [ButtonHandle] whose
  * [ButtonHandle.click] attaches the click callback inline.
  */
-@DiscordMessageBuilder
+@DiscordDsl
 class ResponseScope internal constructor(private val client: DiscordClient) {
     private val payload = MessagePayload()
 

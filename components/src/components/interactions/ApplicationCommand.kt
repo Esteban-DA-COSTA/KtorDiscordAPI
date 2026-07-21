@@ -1,5 +1,6 @@
 package ktordiscord.components.interactions
 
+import ktordiscord.builders.DiscordDsl
 import ktordiscord.components.Snowflake
 import ktordiscord.components.enums.ApplicationCommandOptionTypes
 import ktordiscord.components.enums.ApplicationCommandTypes
@@ -47,6 +48,7 @@ data class ApplicationCommand(
  * (that goes in the URL).
  */
 @Serializable
+@DiscordDsl
 data class ApplicationCommandPayload(
     // Nullable so PATCH (edit) can omit it — the REST Json config has `encodeDefaults = false`, so a
     // null name is left out of the body entirely. Create always sets it (function parameter).

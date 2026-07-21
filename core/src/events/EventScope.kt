@@ -1,5 +1,6 @@
 package ktordiscord.core
 
+import ktordiscord.builders.DiscordDsl
 import ktordiscord.components.Message
 import ktordiscord.gateway.events.DispatchEvent
 import ktordiscord.gateway.events.MessageCreateEvent
@@ -12,6 +13,7 @@ import ktordiscord.gateway.events.MessageUpdateEvent
  *
  * Mirrors the interaction router's `InteractionScope` (which exposes an `interaction` property).
  */
+@DiscordDsl
 class EventScope<out T : DispatchEvent> internal constructor(
     val event: T,
     internal val client: DiscordClient,
