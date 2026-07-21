@@ -1,7 +1,7 @@
 package ktordiscord.core
 
+import ktordiscord.components.User
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 
 /**
@@ -17,10 +17,10 @@ private fun DiscordClient.reactionsUrl(channelId: String, messageId: String): St
  * @param messageId the id of the message.
  * @param emoji the emoji, either a unicode character (e.g. `🔥`) or a custom emoji in `name:id` form.
  */
-suspend fun DiscordClient.createReaction(channelId: String, messageId: String, emoji: String): HttpResponse {
+suspend fun DiscordClient.createReaction(channelId: String, messageId: String, emoji: String): DiscordResponse<Unit> {
     return httpClient.put("${reactionsUrl(channelId, messageId)}/${emoji.encodeEmoji()}/@me") {
         buildDiscordHeader(token)
-    }
+    }.decodeEmpty()
 }
 
 /**
@@ -30,10 +30,10 @@ suspend fun DiscordClient.createReaction(channelId: String, messageId: String, e
  * @param messageId the id of the message.
  * @param emoji the emoji (unicode character or custom emoji `name:id`).
  */
-suspend fun DiscordClient.deleteOwnReaction(channelId: String, messageId: String, emoji: String): HttpResponse {
+suspend fun DiscordClient.deleteOwnReaction(channelId: String, messageId: String, emoji: String): DiscordResponse<Unit> {
     return httpClient.delete("${reactionsUrl(channelId, messageId)}/${emoji.encodeEmoji()}/@me") {
         buildDiscordHeader(token)
-    }
+    }.decodeEmpty()
 }
 
 /**
@@ -44,10 +44,10 @@ suspend fun DiscordClient.deleteOwnReaction(channelId: String, messageId: String
  * @param emoji the emoji (unicode character or custom emoji `name:id`).
  * @param userId the id of the user whose reaction to remove.
  */
-suspend fun DiscordClient.deleteUserReaction(channelId: String, messageId: String, emoji: String, userId: String): HttpResponse {
+suspend fun DiscordClient.deleteUserReaction(channelId: String, messageId: String, emoji: String, userId: String): DiscordResponse<Unit> {
     return httpClient.delete("${reactionsUrl(channelId, messageId)}/${emoji.encodeEmoji()}/$userId") {
         buildDiscordHeader(token)
-    }
+    }.decodeEmpty()
 }
 
 /**
@@ -58,7 +58,7 @@ suspend fun DiscordClient.deleteUserReaction(channelId: String, messageId: Strin
  * @param emoji the emoji (unicode character or custom emoji `name:id`).
  * @param after get users after this user id (pagination).
  * @param limit max number of users to return (1–100).
- * @return an [HttpResponse] whose body is a list of users.
+ * @return a [DiscordResponse] wrapping a list of users.
  */
 suspend fun DiscordClient.getReactions(
     channelId: String,
@@ -66,12 +66,12 @@ suspend fun DiscordClient.getReactions(
     emoji: String,
     after: String? = null,
     limit: Int? = null,
-): HttpResponse {
+): DiscordResponse<List<User>> {
     return httpClient.get("${reactionsUrl(channelId, messageId)}/${emoji.encodeEmoji()}") {
         buildDiscordHeader(token)
         after?.let { parameter("after", it) }
         limit?.let { parameter("limit", it) }
-    }
+    }.decode()
 }
 
 /**
@@ -80,10 +80,10 @@ suspend fun DiscordClient.getReactions(
  * @param channelId the id of the channel.
  * @param messageId the id of the message.
  */
-suspend fun DiscordClient.deleteAllReactions(channelId: String, messageId: String): HttpResponse {
+suspend fun DiscordClient.deleteAllReactions(channelId: String, messageId: String): DiscordResponse<Unit> {
     return httpClient.delete(reactionsUrl(channelId, messageId)) {
         buildDiscordHeader(token)
-    }
+    }.decodeEmpty()
 }
 
 /**
@@ -93,8 +93,8 @@ suspend fun DiscordClient.deleteAllReactions(channelId: String, messageId: Strin
  * @param messageId the id of the message.
  * @param emoji the emoji (unicode character or custom emoji `name:id`).
  */
-suspend fun DiscordClient.deleteAllReactionsForEmoji(channelId: String, messageId: String, emoji: String): HttpResponse {
+suspend fun DiscordClient.deleteAllReactionsForEmoji(channelId: String, messageId: String, emoji: String): DiscordResponse<Unit> {
     return httpClient.delete("${reactionsUrl(channelId, messageId)}/${emoji.encodeEmoji()}") {
         buildDiscordHeader(token)
-    }
+    }.decodeEmpty()
 }

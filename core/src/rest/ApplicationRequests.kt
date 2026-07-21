@@ -1,17 +1,17 @@
 package ktordiscord.core
 
+import ktordiscord.components.Application
 import ktordiscord.components.Snowflake
 import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 
-suspend fun DiscordClient.getApplication(applicationId: String): HttpResponse {
+suspend fun DiscordClient.getApplication(applicationId: String): DiscordResponse<Application> {
     return httpClient.get("$discordURL/${DiscordEndpoints.APPLICATIONS.text}/$applicationId") {
         buildDiscordHeader(token)
-    }
+    }.decode()
 }
 
 suspend fun DiscordClient.getMeApplicationId(): Snowflake {

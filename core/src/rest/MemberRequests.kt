@@ -1,9 +1,11 @@
 package ktordiscord.core
 
 import ktordiscord.components.AddMemberPayload
+import ktordiscord.components.DiscordError
+import ktordiscord.components.Member
 import ktordiscord.components.ModifyMemberPayload
+import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 
 private fun DiscordClient.membersUrl(guildId: String): String =
@@ -15,14 +17,14 @@ private fun DiscordClient.membersUrl(guildId: String): String =
  * @param guildId the id of the guild.
  * @param limit max number of members to return (1–1000).
  * @param after get members after this user id (pagination).
- * @return an [HttpResponse] whose body is a list of members.
+ * @return a [DiscordResponse] wrapping a list of members.
  */
-suspend fun DiscordClient.listGuildMembers(guildId: String, limit: Int? = null, after: String? = null): HttpResponse {
+suspend fun DiscordClient.listGuildMembers(guildId: String, limit: Int? = null, after: String? = null): DiscordResponse<List<Member>> {
     return httpClient.get(membersUrl(guildId)) {
         buildDiscordHeader(token)
         limit?.let { parameter("limit", it) }
         after?.let { parameter("after", it) }
-    }
+    }.decode()
 }
 
 /**
@@ -30,12 +32,12 @@ suspend fun DiscordClient.listGuildMembers(guildId: String, limit: Int? = null, 
  *
  * @param guildId the id of the guild.
  * @param userId the id of the member's user.
- * @return an [HttpResponse] whose body is the member.
+ * @return a [DiscordResponse] wrapping the member.
  */
-suspend fun DiscordClient.getGuildMember(guildId: String, userId: String): HttpResponse {
+suspend fun DiscordClient.getGuildMember(guildId: String, userId: String): DiscordResponse<Member> {
     return httpClient.get("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
-    }
+    }.decode()
 }
 
 /**
@@ -47,13 +49,18 @@ suspend fun DiscordClient.getGuildMember(guildId: String, userId: String): HttpR
  * @param guildId the id of the guild.
  * @param userId the id of the user to add.
  * @param payload the join payload (access token and optional overrides).
- * @return an [HttpResponse] whose body is the member (or `204` if already a member).
+ * @return a [DiscordResponse] wrapping the added member, or `null` on `204` (the user was already a member).
  */
-suspend fun DiscordClient.addGuildMember(guildId: String, userId: String, payload: AddMemberPayload): HttpResponse {
-    return httpClient.put("${membersUrl(guildId)}/$userId") {
+suspend fun DiscordClient.addGuildMember(guildId: String, userId: String, payload: AddMemberPayload): DiscordResponse<Member?> {
+    val response = httpClient.put("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
         setBody(payload)
+    }
+    return when {
+        response.status == HttpStatusCode.NoContent -> DiscordResponse.Success(null, response.status)
+        response.status.isSuccess() -> DiscordResponse.Success(response.body<Member>(), response.status)
+        else -> DiscordResponse.Failure(response.status, runCatching { response.body<DiscordError>() }.getOrNull())
     }
 }
 
@@ -63,14 +70,14 @@ suspend fun DiscordClient.addGuildMember(guildId: String, userId: String, payloa
  * @param guildId the id of the guild.
  * @param userId the id of the member's user.
  * @param payload the fields to update.
- * @return an [HttpResponse] whose body is the updated member.
+ * @return a [DiscordResponse] wrapping the updated member.
  */
-suspend fun DiscordClient.modifyGuildMember(guildId: String, userId: String, payload: ModifyMemberPayload): HttpResponse {
+suspend fun DiscordClient.modifyGuildMember(guildId: String, userId: String, payload: ModifyMemberPayload): DiscordResponse<Member> {
     return httpClient.patch("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
         setBody(payload)
-    }
+    }.decode()
 }
 
 /**
@@ -79,8 +86,8 @@ suspend fun DiscordClient.modifyGuildMember(guildId: String, userId: String, pay
  * @param guildId the id of the guild.
  * @param userId the id of the member's user.
  */
-suspend fun DiscordClient.removeGuildMember(guildId: String, userId: String): HttpResponse {
+suspend fun DiscordClient.removeGuildMember(guildId: String, userId: String): DiscordResponse<Unit> {
     return httpClient.delete("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
-    }
+    }.decodeEmpty()
 }

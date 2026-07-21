@@ -2,7 +2,6 @@ package ktordiscord.core
 
 import ktordiscord.components.enums.InteractionTypes
 import ktordiscord.components.interactions.ApplicationCommand
-import io.ktor.client.call.*
 
 class InteractionManager private constructor(private val client: DiscordClient) {
 
@@ -22,8 +21,7 @@ class InteractionManager private constructor(private val client: DiscordClient) 
     }
 
     private suspend fun retrieveInteractionCommands() {
-        val httpResponse = client.getGlobalApplicationCommands(client.applicationId)
-        val appCommands = httpResponse.body<List<ApplicationCommand>>()
+        val appCommands = client.getGlobalApplicationCommands(client.applicationId).getOrNull() ?: emptyList()
         this.appCommands[InteractionTypes.APPLICATION_COMMAND] = appCommands
     }
 }

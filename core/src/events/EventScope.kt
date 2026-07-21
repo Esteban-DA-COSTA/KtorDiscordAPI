@@ -1,9 +1,9 @@
 package ktordiscord.core
 
+import ktordiscord.components.Message
 import ktordiscord.gateway.events.DispatchEvent
 import ktordiscord.gateway.events.MessageCreateEvent
 import ktordiscord.gateway.events.MessageUpdateEvent
-import io.ktor.client.statement.HttpResponse
 
 /**
  * Receiver handed to an event handler registered with [DiscordClient.on]. Carries the incoming
@@ -25,7 +25,7 @@ class EventScope<out T : DispatchEvent> internal constructor(
  * @throws IllegalStateException if the incoming message carries no channel id.
  */
 @JvmName("replyToMessageCreate")
-suspend fun EventScope<MessageCreateEvent>.reply(init: ResponseScope.() -> Unit): HttpResponse {
+suspend fun EventScope<MessageCreateEvent>.reply(init: ResponseScope.() -> Unit): DiscordResponse<Message> {
     val channelId = event.message.channelId ?: error("Message has no channel id")
     return client.sendMessage(channelId, init)
 }
@@ -37,7 +37,7 @@ suspend fun EventScope<MessageCreateEvent>.reply(init: ResponseScope.() -> Unit)
  * @see reply
  */
 @JvmName("replyToMessageUpdate")
-suspend fun EventScope<MessageUpdateEvent>.reply(init: ResponseScope.() -> Unit): HttpResponse {
+suspend fun EventScope<MessageUpdateEvent>.reply(init: ResponseScope.() -> Unit): DiscordResponse<Message> {
     val channelId = event.message.channelId ?: error("Message has no channel id")
     return client.sendMessage(channelId, init)
 }

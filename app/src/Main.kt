@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import ktordiscord.components.enums.ButtonStyle
 import ktordiscord.core.DiscordClient
 import ktordiscord.core.InteractionKind
+import ktordiscord.core.onFailure
 import ktordiscord.core.reply
 import ktordiscord.gateway.events.MessageCreateEvent
 import ktordiscord.gateway.events.ReadyEvent
@@ -17,7 +18,10 @@ fun main(): Unit = runBlocking {
 
     discordClient.on<MessageCreateEvent> {
         when (event.message.content) {
+            // Les verbes REST renvoient désormais un DiscordResponse<T> : on peut ignorer le
+            // résultat, ou réagir à l'échec (statut HTTP + corps d'erreur Discord typé).
             "ping" -> reply { content = "pong!" }
+                .onFailure { println("Échec d'envoi (${it.status}) : ${it.error?.message}") }
 
             // Un bouton sur un message classique (hors interaction). Son custom_id stable
             // "refresh" est géré par le handler top-level enregistré plus bas.

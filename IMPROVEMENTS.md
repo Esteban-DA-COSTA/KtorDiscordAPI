@@ -64,9 +64,12 @@ sortants (`ModifyChannelPayload`, `CreateChannelPayload`, `BulkDeleteMessagesPay
 `Reaction`, `Ban`). Nouveaux fichiers `rest/{Reaction,Member,Ban,Emoji,User}Requests.kt`. Tests
 d'encodage/décodage : `RestPayloadEncodingTest`, `RestModelDecodingTest`. Dette résiduelle :
 
-- [ ] **Réponses REST non typées.** Les fonctions renvoient `HttpResponse` brut ; l'appelant fait
-  `.body<T>()`. Aucune gestion d'erreur centralisée sur les codes 4xx/5xx ni pour les réponses
-  vides (204 sur DELETE/PUT). À généraliser si on veut une API typée.
+- [x] **Réponses REST typées.** Toutes les fonctions REST renvoient désormais un
+  `DiscordResponse<T>` scellé (`Success(value, status)` / `Failure(status, error)`) au lieu de
+  `HttpResponse` brut : décodage typé du corps (objet / liste / `Unit` sur 204), gestion
+  centralisée des 4xx/5xx avec corps d'erreur `DiscordError` typé, et helpers
+  `getOrNull` / `getOrThrow` / `onSuccess` / `onFailure`. Voir `rest/DiscordResponse.kt`,
+  `components/DiscordError.kt`. Tests : `DiscordResponseTest`, `DiscordErrorDecodingTest`.
 - [ ] **Modèles entrants encore partiels.** `Channel`, `Member`, `User`, `Emoji` ont reçu des
   défauts `= null` sur leurs champs optionnels pour que `.body<T>()` décode les payloads réels
   (Discord omet souvent des champs). Mais ils restent incomplets côté champs couverts (threads,
