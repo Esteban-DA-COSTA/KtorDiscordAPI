@@ -1,5 +1,6 @@
 package ktordiscord.core
 
+import ktordiscord.builders.DiscordDsl
 import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.interactions.ApplicationCommandPayload
 import ktordiscord.components.interactions.Interaction
@@ -15,6 +16,7 @@ typealias ComponentHandler = suspend ComponentInteractionScope.() -> Unit
  * to reply to it. Concrete scopes ([CommandInteractionScope], [ComponentInteractionScope]) expose
  * the reply verbs that make sense for their interaction type.
  */
+@DiscordDsl
 sealed class InteractionScope(
     val interaction: Interaction,
     internal val client: DiscordClient,
@@ -73,6 +75,7 @@ class CommandInteractionScope internal constructor(
  * }
  * ```
  */
+@DiscordDsl
 class CommandScope internal constructor(
     private val client: DiscordClient,
     private val commandName: String,

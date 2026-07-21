@@ -1,5 +1,6 @@
 package ktordiscord.components
 
+import ktordiscord.builders.DiscordDsl
 import ktordiscord.components.enums.ButtonStyle
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -80,6 +81,7 @@ data class ActionRow(
  *
  * Non-[ButtonStyle.LINK] buttons need a [customId]; [ButtonStyle.LINK] buttons need a [url] instead.
  */
+@DiscordDsl
 data class Button(
     var style: ButtonStyle = ButtonStyle.PRIMARY,
     var label: String? = null,

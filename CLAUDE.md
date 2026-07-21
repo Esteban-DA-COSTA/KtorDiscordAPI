@@ -68,7 +68,7 @@ app ──► core ──► components   (exported)
 - `components/Snowflake.kt` — `value class Snowflake` (inline) avec sérialiseur custom, plus l'extension `String.snowflake`.
 - `components/enums/*.kt` — enums typés Discord, souvent sérialisés par entier.
 - `components/interactions/*.kt` — `Interaction`, `InteractionData` (hiérarchie scellée à désérialisation manuelle selon `type`), `ApplicationCommand`, `InteractionCallBack`.
-- `builders/DiscordMessageBuilder.kt` — le DSL de construction de messages.
+- `builders/DiscordDsl.kt` — le `@DslMarker` unifié `@DiscordDsl` (posé sur tous les récepteurs du DSL). `builders/MessageBuilders.kt` — les fonctions d'extension du DSL de construction de messages (`embed { }`, `field { }`, `color(Color)`…).
 
 ## Conventions et patterns de code
 
@@ -79,7 +79,7 @@ app ──► core ──► components   (exported)
 - Champs non sérialisés : `@Transient` (ex. `DispatchEvent.sequenceId`, `Interaction.data`).
 
 ### DSL builders
-- `@DslMarker annotation class DiscordMessageBuilder` + fonctions d'extension annotées.
+- `@DslMarker annotation class DiscordDsl` (`@Target(AnnotationTarget.CLASS)`, dans `DiscordDsl.kt`) posé sur **les classes réceptrices** de tout le DSL — contenu (`MessagePayload`, `Embed`, `Embed*`, `Button`), scopes (`ResponseScope`, `CommandScope`, `InteractionScope` + sous-classes, `EventScope`) et commandes (`ApplicationCommandPayload`) — jamais sur les fonctions (un `@DslMarker` sur une fonction est inopérant). Groupe unique → aucune fuite de scope entre lambdas imbriqués.
 - Pattern récurrent dans toute l'API publique : paramètre `init: X.() -> Unit` consommé par `X().apply(init)` (ex. `sendMessage(channelId) { content = "..."; embed { title = "..." } }`).
 
 ### Appels REST

@@ -1,5 +1,6 @@
 package ktordiscord.components
 
+import ktordiscord.builders.DiscordDsl
 import ktordiscord.components.enums.EmbedTypes
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -27,6 +28,7 @@ data class Message(
  * Payload used to **send** a message to Discord. Mutable so the `sendMessage { }` DSL can fill it in.
  */
 @Serializable
+@DiscordDsl
 data class MessagePayload(
     var content: String? = null,
     var tts: Boolean = false,
@@ -40,6 +42,7 @@ data class MessagePayload(
 )
 
 @Serializable
+@DiscordDsl
 data class Embed(
     var title: String? = null,
     var type: ktordiscord.components.enums.EmbedTypes? = null,
@@ -59,6 +62,7 @@ data class Embed(
 )
 
 @Serializable
+@DiscordDsl
 data class EmbedFooter(
     var text: String = "",
     @SerialName("icon_url")
@@ -68,6 +72,7 @@ data class EmbedFooter(
 )
 
 @Serializable
+@DiscordDsl
 data class EmbedImage(
     var url: String = "",
     @SerialName("proxy_url")
@@ -77,12 +82,14 @@ data class EmbedImage(
 )
 
 @Serializable
+@DiscordDsl
 data class EmbedProvider(
     var name: String? = null,
     var url: String? = null
 )
 
 @Serializable
+@DiscordDsl
 data class EmbedAuthor(
     var name: String = "",
     var url: String? = null,
@@ -93,6 +100,7 @@ data class EmbedAuthor(
 )
 
 @Serializable
+@DiscordDsl
 data class EmbedField(
     var name: String = "",
     var value: String = "",
