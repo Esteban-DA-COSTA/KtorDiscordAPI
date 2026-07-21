@@ -85,9 +85,9 @@ class DiscordClient private constructor(
                 }
                 httpClientLogger.warn {
                     "Rate limited (429), retrying in ${delayMs}ms " +
-                        "[global=${headers?.get("X-RateLimit-Global")}, " +
-                        "scope=${headers?.get("X-RateLimit-Scope")}, " +
-                        "remaining=${headers?.get("X-RateLimit-Remaining")}]"
+                            "[global=${headers?.get("X-RateLimit-Global")}, " +
+                            "scope=${headers?.get("X-RateLimit-Scope")}, " +
+                            "remaining=${headers?.get("X-RateLimit-Remaining")}]"
                 }
                 delayMs
             }
@@ -133,7 +133,7 @@ class DiscordClient private constructor(
     private class CommandDefinition(
         val name: String,
         val guildId: Snowflake?,
-        val init: ktordiscord.components.interactions.ApplicationCommandPayload.() -> Unit,
+        val init: ApplicationCommandPayload.() -> Unit,
     )
 
     private val pendingCommandDefinitions = mutableListOf<CommandDefinition>()
@@ -141,7 +141,8 @@ class DiscordClient private constructor(
     // Event routing registry: event class -> handlers registered for it (multiple listeners allowed,
     // invoked in registration order). Keyed by the concrete DispatchEvent subclass (all are leaf
     // data classes), so `event::class` matches exactly what `on<T>()` registered under T::class.
-    private val eventHandlers = mutableMapOf<KClass<out DispatchEvent>, MutableList<suspend EventScope<DispatchEvent>.() -> Unit>>()
+    private val eventHandlers =
+        mutableMapOf<KClass<out DispatchEvent>, MutableList<suspend EventScope<DispatchEvent>.() -> Unit>>()
 
     // Internal dispatch loops: route every incoming interaction / event to its registered handler(s).
     // Each is run in its own child coroutine so a slow handler never blocks the others.
@@ -397,7 +398,7 @@ class DiscordClient private constructor(
     internal fun registerCommandDefinition(
         name: String,
         guildId: Snowflake?,
-        init: ktordiscord.components.interactions.ApplicationCommandPayload.() -> Unit,
+        init: ApplicationCommandPayload.() -> Unit,
     ) {
         pendingCommandDefinitions.add(CommandDefinition(name, guildId, init))
     }

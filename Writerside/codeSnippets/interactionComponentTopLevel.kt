@@ -1,3 +1,8 @@
+import ktordiscord.components.snowflake
+import ktordiscord.core.InteractionKind
+
+val channelId = "123456789012345678".snowflake
+
 // Un bouton sur un message classique (hors interaction), avec un custom_id stable.
 kda.sendMessage(channelId) {
     content = "Menu :"

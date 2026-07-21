@@ -1,4 +1,6 @@
-val channelId = "myDiscordChannelId"
+import ktordiscord.components.snowflake
+
+val channelId = "123456789012345678".snowflake
 
 // Chaque appel REST renvoie un DiscordResponse<T>.
 val response = kda.sendMessage(channelId) {

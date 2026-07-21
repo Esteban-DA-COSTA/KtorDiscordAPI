@@ -1,24 +1,44 @@
 <topic xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       title="Kotlin Discord API" id="Home">
+       title="Ktor Discord API" id="Home">
     <section-starting-page>
-        <title>Kotlin Discord API - KDA</title>
+        <title>Ktor Discord API — KDA</title>
         <description>
-            My app
+            Une bibliothèque Kotlin/JVM pour écrire des bots Discord : appels REST typés, événements
+            Gateway et interactions (commandes, boutons), le tout piloté par des DSL idiomatiques.
         </description>
+
         <spotlight>
-            <title>Getting started</title>
-            <card href="Basic_usage.md" summary="Getting started with the library" badge="start"/>
-            <card href="Core_module.md" summary="The core module" badge="case"/>
+            <card href="Introduction.md" summary="Ce qu'est KDA, comment l'ajouter à ton projet et les prérequis." badge="start">
+                Introduction et installation
+            </card>
+            <card href="Premiers_pas.md" summary="Créer un client, faire un premier appel, écouter un premier événement." badge="idea">
+                Premiers pas
+            </card>
         </spotlight>
 
         <primary>
-            <title>Main group</title>
-            <card href="Basic_usage.md" summary="Basic usage of the library"/>
+            <title>Le socle</title>
+            <card href="Client.md" summary="Construire, configurer et fermer le DiscordClient."/>
+            <card href="Connexion.md" summary="Se connecter à la Gateway avec login() et les intents."/>
+            <card href="Rest_overview.md" summary="Appeler l'API REST et traiter les réponses (DiscordResponse)."/>
         </primary>
+
         <secondary>
-            <title>Secondary group</title>
-            <card href="Core_module.md" summary="The core module"/>
+            <title>Réagir &amp; répondre</title>
+            <card href="Events.md" summary="Écouter les événements Gateway avec on&lt;T&gt;."/>
+            <card href="Commands.md" summary="Déclarer et gérer des slash commands."/>
+            <card href="Components.md" summary="Ajouter des boutons et router leurs clics."/>
+            <card href="Message_dsl.md" summary="Construire des messages et des embeds avec le DSL."/>
         </secondary>
+
+        <misc>
+            <cards narrow="true">
+                <title>Aller plus loin</title>
+                <card href="Presence.md" summary="Changer le statut et l'activité du bot."/>
+                <card href="Adv_architecture.md" summary="Les modules et leur découpage."/>
+                <card href="Adv_gateway.md" summary="Heartbeat, reconnexion et resume."/>
+            </cards>
+        </misc>
     </section-starting-page>
 </topic>

@@ -29,6 +29,12 @@ fun main(): Unit = runBlocking {
                 content = "Menu :"
                 button("Rafraîchir", customId = "refresh") { style = ButtonStyle.SECONDARY }
             }
+            
+            "killMe" -> reply { 
+                content = "Ok je meurs"
+            }.also { 
+                discordClient.close()
+            }
         }
     }
 
