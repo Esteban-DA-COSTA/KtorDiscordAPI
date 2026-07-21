@@ -30,7 +30,9 @@ data class ApplicationCommand(
  */
 @Serializable
 data class ApplicationCommandPayload(
-    val name: String,
+    // Nullable so PATCH (edit) can omit it — the REST Json config has `encodeDefaults = false`, so a
+    // null name is left out of the body entirely. Create always sets it (function parameter).
+    var name: String? = null,
     var description: String? = null,
     val type: Int? = null,
     var options: List<ApplicationCommandDataOption>? = null,

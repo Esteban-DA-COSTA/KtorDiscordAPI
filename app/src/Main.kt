@@ -1,14 +1,12 @@
 package ktordiscord.app
 
-import ktordiscord.builders.embed
+import kotlinx.coroutines.runBlocking
 import ktordiscord.components.enums.ButtonStyle
 import ktordiscord.core.DiscordClient
 import ktordiscord.core.InteractionKind
-import ktordiscord.core.createGlobalApplicationCommand
 import ktordiscord.core.reply
-import ktordiscord.gateway.events.*
-import io.ktor.client.statement.*
-import kotlinx.coroutines.runBlocking
+import ktordiscord.gateway.events.MessageCreateEvent
+import ktordiscord.gateway.events.ReadyEvent
 
 fun main(): Unit = runBlocking {
     val discordClient = DiscordClient.create("secret")
@@ -30,9 +28,11 @@ fun main(): Unit = runBlocking {
         }
     }
 
-    // Interaction routing: one handler per command. A button added inside `respond { }` binds its
+    // Interaction routing: one `on` block both declares the command (`define`, synced to Discord on
+    // login()) and registers its handler (`respond`). A button added inside `respond { }` binds its
     // own click callback inline via `.click { }` — no separate top-level registration needed.
     discordClient.on("pingit") {
+        define { description = "Send a ping message with a button" }
         respond {
             content = "Pong ! Encore ?"
             embed {
@@ -51,11 +51,6 @@ fun main(): Unit = runBlocking {
         update { content = "Rafraîchi ! 🔄" }
     }
 
+    // login() syncs every `define { }` above to Discord (bulk overwrite) and connects the Gateway.
     discordClient.login(33283)
-
-    val response = discordClient.createGlobalApplicationCommand("pingit") {
-        description = "Send a ping message with a button"
-    }
-    println(response.status)
-    println(response.bodyAsText())
 }

@@ -1,7 +1,7 @@
 package ktordiscord.core
 
-import ktordiscord.components.MessagePayload
 import ktordiscord.components.enums.InteractionCallbackTypes
+import ktordiscord.components.interactions.ApplicationCommandPayload
 import ktordiscord.components.interactions.Interaction
 
 /** Callback registered for an application command, run with a [CommandInteractionScope] receiver. */
@@ -51,6 +51,62 @@ class CommandInteractionScope internal constructor(
      */
     suspend fun defer() =
         reply(InteractionCallbackTypes.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE, null)
+}
+
+/**
+ * Configuration scope for `client.on("commandName") { ... }`. Runs **once at registration** (unlike
+ * [CommandInteractionScope], which is instantiated per dispatched interaction). It lets a single `on`
+ * block both **declare** the command on Discord ([define]) and register how it is **handled** when
+ * invoked ([handle] / [respond] / [defer]).
+ *
+ * ```
+ * client.on("ping") {
+ *     define { description = "Ping the bot" }   // synced to Discord on login()
+ *     respond { content = "pong" }              // static reply
+ * }
+ *
+ * client.on("echo") {
+ *     define { description = "Echo back" }
+ *     handle {                                  // full CommandInteractionScope: dynamic
+ *         defer(); editOriginal { content = interaction.token }
+ *     }
+ * }
+ * ```
+ */
+class CommandScope internal constructor(
+    private val client: DiscordClient,
+    private val commandName: String,
+) {
+    /**
+     * Declare this command on Discord. The definition is collected and pushed on [DiscordClient.login]
+     * via a **bulk overwrite** (one request per scope). Omit [guildId] for a global command; pass a
+     * guild id for a guild command (propagates instantly — handy for development).
+     *
+     * Because the sync uses bulk overwrite, commands **not** declared with `define` in the same scope
+     * are removed from Discord on login (declarative registration, per Discord's startup guidance).
+     */
+    fun define(guildId: String? = null, init: ApplicationCommandPayload.() -> Unit) =
+        client.registerCommandDefinition(commandName, guildId, init)
+
+    /**
+     * Register the dynamic dispatch handler, run with a full [CommandInteractionScope] receiver
+     * (access to `interaction`, `respond`, `defer`, `editOriginal`, branching…). This is the general
+     * form; [respond] and [defer] are shorthands for common cases.
+     */
+    fun handle(handler: CommandHandler) =
+        client.registerCommandHandler(commandName, handler)
+
+    /** Shorthand for the common static reply. Equivalent to `handle { respond(init) }`. */
+    fun respond(init: ResponseScope.() -> Unit) =
+        client.registerCommandHandler(commandName) { respond(init) }
+
+    /**
+     * Shorthand acknowledging the command in a "thinking…" state; complete it later with
+     * [InteractionScope.editOriginal] (use [handle] if that follow-up needs the interaction).
+     * Equivalent to `handle { defer() }`.
+     */
+    fun defer() =
+        client.registerCommandHandler(commandName) { defer() }
 }
 
 /**

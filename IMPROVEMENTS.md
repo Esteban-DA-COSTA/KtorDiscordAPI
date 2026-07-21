@@ -39,7 +39,7 @@ Système `discordClient.on("cmd") { respond { button(...).click { } } }` : route
 - [ ] **Callbacks de composants en mémoire.** `componentHandlers` (custom_id → callback) vit dans `DiscordClient` : perdu au redémarrage, et **croît sans éviction** (chaque rendu d'un bouton auto-`custom_id` ajoute une entrée). → customId stable optionnel, TTL/éviction, ou registre borné.
 - [ ] **Composants limités aux boutons.** Modèle `MessageComponent` scellé prêt à étendre → select menus (`type 3`), text inputs / modals (`MODAL` + `MODAL_SUBMIT`).
 - [ ] **`MessageComponentData.componentType` reste un `Int`.** → enum `ComponentType` sérialisé par entier (pattern `IntEnumSerializer`).
-- [ ] **Pas de bloc `define { }`.** L'ergonomie `respond { }` a été retenue pour permettre plus tard un bloc `define { }` créant l'`ApplicationCommand` dans la même lambda `on`. À implémenter.
+- [x] **Pas de bloc `define { }`.** L'ergonomie `respond { }` a été retenue pour permettre plus tard un bloc `define { }` créant l'`ApplicationCommand` dans la même lambda `on`. *Fait : `on(name) { }` reçoit désormais un `CommandScope` (config, exécuté à l'enregistrement) avec `define(guildId?) { }` (global ou guilde), `handle { }` (dispatch dynamique complet), et les sucres `respond { }` / `defer()`. Les `define` sont collectés puis synchronisés en **bulk-overwrite** au `login()`. Endpoints REST Application Command complétés au passage (global get/edit/delete/bulk, guild create/get/list/edit/delete/bulk, permissions get/edit) + modèles de permissions.*
 - [ ] **Sérialiseur `MessageComponent` write-only.** `deserialize` lève une erreur (on n'émet que des composants). À compléter si un jour on doit décoder des composants entrants complets.
 
 ## Routeur d'events Gateway (v1 livrée)
