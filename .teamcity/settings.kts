@@ -156,7 +156,7 @@ object GenerateDoc : BuildType({
 
     triggers {
         vcs {
-            branchFilter = "+:main"
+            branchFilter = "+:refs/heads/main"
             triggerRules = "+:Writerside/**"
         }
     }
@@ -264,7 +264,15 @@ object PublishPackages : BuildType({
             id = "publish"
             scriptContent = """
                 chmod +x ./kotlin
-                ./kotlin publish github
+                set +e
+                OUT=${'$'}(./kotlin publish github 2>&1)
+                CODE=${'$'}?
+                echo "${'$'}OUT"
+                if [ ${'$'}CODE -ne 0 ]; then
+                  # 409 = version déjà publiée sur GitHub Packages → considéré comme OK (build ré-exécutable)
+                  echo "${'$'}OUT" | grep -q "409" && { echo "Version déjà publiée (409) — on continue."; exit 0; }
+                  exit ${'$'}CODE
+                fi
             """.trimIndent()
         }
         script {
@@ -273,30 +281,34 @@ object PublishPackages : BuildType({
             scriptContent = """
                 set -e
                 REPO="Esteban-DA-COSTA/KtorDiscordAPI"
+                TAG="%release.tag%"
+                AUTH="Authorization: Bearer ${'$'}GH_TOKEN"
+                ACCEPT="Accept: application/vnd.github+json"
 
-                # 1. Crée la release avec changelog auto-généré
-                RESP=${'$'}(curl -sS -X POST "https://api.github.com/repos/${'$'}REPO/releases" \
-                  -H "Authorization: Bearer ${'$'}GH_TOKEN" \
-                  -H "Accept: application/vnd.github+json" \
-                  -d '{"tag_name":"%release.tag%","name":"%release.tag%","generate_release_notes":true}')
+                # Renvoie le 1er "id" d'une réponse JSON (= id de la release), sans jq
+                first_id() { grep -o '"id": *[0-9]*' | head -1 | grep -o '[0-9]*'; }
 
-                RELEASE_ID=${'$'}(echo "${'$'}RESP" | jq -r '.id')
-                if [ "${'$'}RELEASE_ID" = "null" ] || [ -z "${'$'}RELEASE_ID" ]; then
-                  echo "Échec création release : ${'$'}RESP"; exit 1
+                # 1. Récupère la release si elle existe déjà, sinon la crée (idempotent)
+                RELEASE_ID=${'$'}(curl -sS -H "${'$'}AUTH" -H "${'$'}ACCEPT" \
+                  "https://api.github.com/repos/${'$'}REPO/releases/tags/${'$'}TAG" | first_id)
+                if [ -z "${'$'}RELEASE_ID" ]; then
+                  RELEASE_ID=${'$'}(curl -sS -X POST "https://api.github.com/repos/${'$'}REPO/releases" \
+                    -H "${'$'}AUTH" -H "${'$'}ACCEPT" \
+                    -d '{"tag_name":"%release.tag%","name":"%release.tag%","generate_release_notes":true}' | first_id)
                 fi
+                if [ -z "${'$'}RELEASE_ID" ]; then echo "Impossible d'obtenir l'id de la release"; exit 1; fi
 
-                # 2. Attache les jars comme assets
+                # 2. Attache les jars comme assets (409/422 si déjà présents → ignoré)
                 upload() {
                   curl -sS -X POST \
                     "https://uploads.github.com/repos/${'$'}REPO/releases/${'$'}RELEASE_ID/assets?name=${'$'}2" \
-                    -H "Authorization: Bearer ${'$'}GH_TOKEN" \
-                    -H "Content-Type: application/java-archive" \
-                    --data-binary @"${'$'}1" > /dev/null
+                    -H "${'$'}AUTH" -H "Content-Type: application/java-archive" \
+                    --data-binary @"${'$'}1" > /dev/null || echo "asset ${'$'}2 : déjà présent ou erreur, ignoré"
                 }
                 upload components/build/libs/components-jvm.jar "components-%release.version%.jar"
                 upload websocket/build/libs/websocket-jvm.jar   "websocket-%release.version%.jar"
                 upload core/build/libs/core-jvm.jar             "kda-%release.version%.jar"
-                echo "Release %release.tag% créée (id=${'$'}RELEASE_ID) avec 3 assets."
+                echo "Release ${'$'}TAG prête (id=${'$'}RELEASE_ID)."
             """.trimIndent()
         }
     }
