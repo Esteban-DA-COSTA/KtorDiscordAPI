@@ -1,34 +1,28 @@
 package ktordiscord.core
 
-import ktordiscord.components.MessagePayload
-import ktordiscord.components.enums.InteractionCallbackTypes
-import ktordiscord.components.enums.InteractionTypes
-import ktordiscord.components.interactions.ApplicationCommand
-import ktordiscord.components.interactions.ApplicationCommandData
-import ktordiscord.components.interactions.Interaction
-import ktordiscord.components.interactions.MessageComponentData
-import ktordiscord.gateway.DiscordWebSocketSession
-import ktordiscord.gateway.events.DispatchEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
+import ktordiscord.components.MessagePayload
+import ktordiscord.components.enums.InteractionCallbackTypes
+import ktordiscord.components.interactions.ApplicationCommandData
+import ktordiscord.components.interactions.Interaction
+import ktordiscord.components.interactions.MessageComponentData
+import ktordiscord.gateway.DiscordWebSocketSession
+import ktordiscord.gateway.events.DispatchEvent
 import kotlin.reflect.KClass
 
 /**
@@ -63,6 +57,34 @@ class DiscordClient private constructor(internal val token: String) {
                 explicitNulls = false
                 isLenient = true
             })
+        }
+        // Discord rate-limit handling: on a 429, wait the delay advertised by the response and
+        // replay the request. We only retry on 429 (not 5xx / network errors — out of scope).
+        install(HttpRequestRetry) {
+            maxRetries = 5
+            retryIf { _, response -> response.status.value == 429 }
+            // `respectRetryAfterHeader = true` lets Ktor also honor `Retry-After` on its own; kept
+            // as a safety net. We read it explicitly here to log the X-RateLimit-* context and to
+            // fall back on `X-RateLimit-Reset-After` when the plain header is absent.
+            delayMillis(respectRetryAfterHeader = true) { _ ->
+                val headers = response?.headers
+                // Discord's Retry-After is in (whole) seconds; X-RateLimit-Reset-After is fractional.
+                val retryAfterMs = headers?.get(HttpHeaders.RetryAfter)?.toLongOrNull()?.times(1000)
+                    ?: headers?.get("X-RateLimit-Reset-After")?.toDoubleOrNull()?.times(1000)?.toLong()
+                    ?: 1000L
+                // Defensive cap: never suspend a coroutine for an absurd duration.
+                val delayMs = retryAfterMs.coerceAtMost(MAX_RATE_LIMIT_DELAY_MS)
+                if (retryAfterMs > MAX_RATE_LIMIT_DELAY_MS) {
+                    httpClientLogger.warn { "Rate-limit Retry-After ${retryAfterMs}ms exceeds cap, waiting ${delayMs}ms instead" }
+                }
+                httpClientLogger.warn {
+                    "Rate limited (429), retrying in ${delayMs}ms " +
+                        "[global=${headers?.get("X-RateLimit-Global")}, " +
+                        "scope=${headers?.get("X-RateLimit-Scope")}, " +
+                        "remaining=${headers?.get("X-RateLimit-Remaining")}]"
+                }
+                delayMs
+            }
         }
     }
 
@@ -123,6 +145,10 @@ class DiscordClient private constructor(internal val token: String) {
     private lateinit var interactionManager: InteractionManager
 
     companion object {
+        // Upper bound on how long a single rate-limited request will wait before replaying, so an
+        // unexpectedly large Retry-After can never suspend a coroutine for an absurd duration.
+        private const val MAX_RATE_LIMIT_DELAY_MS = 60_000L
+
         /**
          * Create and initialize a [DiscordClient].
          *
