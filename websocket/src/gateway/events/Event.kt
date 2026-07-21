@@ -83,7 +83,7 @@ private object EventSerializer : KSerializer<Event> {
 
             MESSAGE_CREATE -> {
                 val message = decoder.json.decodeFromJsonElement(Message.serializer(), data)
-                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content
+                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content?.let { Snowflake(it) }
                 val member = data.jsonObject["member"]
                     ?.let { decoder.json.decodeFromJsonElement(Member.serializer(), it) }
                 val mentions = data.jsonObject["mentions"]
@@ -93,7 +93,7 @@ private object EventSerializer : KSerializer<Event> {
 
             MESSAGE_UPDATE -> {
                 val message = decoder.json.decodeFromJsonElement(Message.serializer(), data)
-                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content
+                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content?.let { Snowflake(it) }
                 val member = data.jsonObject["member"]
                     ?.let { decoder.json.decodeFromJsonElement(Member.serializer(), it) }
                 val mentions = data.jsonObject["mentions"]
@@ -104,10 +104,94 @@ private object EventSerializer : KSerializer<Event> {
             MESSAGE_DELETE -> decoder.json.decodeFromJsonElement(MessageDeleteEvent.serializer(), data)
                 .apply { this.sequenceId = sequenceId }
 
+            MESSAGE_DELETE_BULK -> decoder.json.decodeFromJsonElement(MessageDeleteBulkEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
             GUILD_CREATE -> {
                 val guild = decoder.json.decodeFromJsonElement(Guild.serializer(), data)
                 GuildCreateEvent(sequenceId, guild)
             }
+
+            GUILD_UPDATE -> {
+                val guild = decoder.json.decodeFromJsonElement(Guild.serializer(), data)
+                GuildUpdateEvent(sequenceId, guild)
+            }
+
+            GUILD_DELETE -> {
+                val guild = decoder.json.decodeFromJsonElement(UnavailableGuild.serializer(), data)
+                GuildDeleteEvent(sequenceId, guild)
+            }
+
+            GUILD_MEMBER_ADD -> {
+                val member = decoder.json.decodeFromJsonElement(Member.serializer(), data)
+                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content?.let { Snowflake(it) }
+                GuildMemberAddEvent(sequenceId, guildId, member)
+            }
+
+            GUILD_MEMBER_UPDATE -> decoder.json.decodeFromJsonElement(GuildMemberUpdateEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            GUILD_MEMBER_REMOVE -> decoder.json.decodeFromJsonElement(GuildMemberRemoveEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            GUILD_MEMBERS_CHUNK -> decoder.json.decodeFromJsonElement(GuildMembersChunkEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            GUILD_ROLE_CREATE -> decoder.json.decodeFromJsonElement(GuildRoleCreateEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            GUILD_ROLE_UPDATE -> decoder.json.decodeFromJsonElement(GuildRoleUpdateEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            GUILD_ROLE_DELETE -> decoder.json.decodeFromJsonElement(GuildRoleDeleteEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            MESSAGE_REACTION_ADD -> decoder.json.decodeFromJsonElement(MessageReactionAddEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            MESSAGE_REACTION_REMOVE -> decoder.json.decodeFromJsonElement(MessageReactionRemoveEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            MESSAGE_REACTION_REMOVE_ALL -> decoder.json.decodeFromJsonElement(MessageReactionRemoveAllEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            MESSAGE_REACTION_REMOVE_EMOJI -> decoder.json.decodeFromJsonElement(MessageReactionRemoveEmojiEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            TYPING_START -> decoder.json.decodeFromJsonElement(TypingStartEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            VOICE_STATE_UPDATE -> {
+                val voiceState = decoder.json.decodeFromJsonElement(VoiceState.serializer(), data)
+                VoiceStateUpdateEvent(sequenceId, voiceState)
+            }
+
+            THREAD_CREATE -> {
+                val thread = decoder.json.decodeFromJsonElement(Channel.serializer(), data)
+                ThreadCreateEvent(sequenceId, thread)
+            }
+
+            THREAD_UPDATE -> {
+                val thread = decoder.json.decodeFromJsonElement(Channel.serializer(), data)
+                ThreadUpdateEvent(sequenceId, thread)
+            }
+
+            THREAD_DELETE -> {
+                val thread = decoder.json.decodeFromJsonElement(Channel.serializer(), data)
+                ThreadDeleteEvent(sequenceId, thread)
+            }
+
+            THREAD_LIST_SYNC -> decoder.json.decodeFromJsonElement(ThreadListSyncEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
+
+            THREAD_MEMBER_UPDATE -> {
+                val member = decoder.json.decodeFromJsonElement(ThreadMember.serializer(), data)
+                val guildId = data.jsonObject["guild_id"]?.jsonPrimitive?.content?.let { Snowflake(it) }
+                ThreadMemberUpdateEvent(sequenceId, guildId, member)
+            }
+
+            THREAD_MEMBERS_UPDATE -> decoder.json.decodeFromJsonElement(ThreadMembersUpdateEvent.serializer(), data)
+                .apply { this.sequenceId = sequenceId }
 
             PRESENCE_UPDATE -> decoder.json.decodeFromJsonElement(PresenceUpdateEvent.serializer(), data)
                 .apply { this.sequenceId = sequenceId }

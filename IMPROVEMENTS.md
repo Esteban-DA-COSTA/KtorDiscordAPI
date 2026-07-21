@@ -66,10 +66,32 @@ repointé sur `BotActivity` et `status` typé `StatusTypeEnum`. Helper d'envoi g
 - [ ] **Voice State Update (OP 4) sortant.** Non implémenté. → event sortant + payload
   (`guild_id`, `channel_id?`, `self_mute`, `self_deaf`) sur la base `OutgoingEventSerializer`, et
   méthode publique sur `DiscordClient` (rejoindre/quitter un salon vocal).
-- [ ] **Réception des `GUILD_MEMBERS_CHUNK`.** La commande OP 8 est envoyée mais la réponse n'est pas
+- [x] **Réception des `GUILD_MEMBERS_CHUNK`.** La commande OP 8 est envoyée mais la réponse n'est pas
   décodée : ajouter `GUILD_MEMBERS_CHUNK` dans `DispatchEvents`, un modèle `GuildMembersChunk`, et la
   branche correspondante dans `EventSerializer.decodeDispatchEvent` (`Event.kt`) pour rendre
-  `requestGuildMembers` utile de bout en bout.
+  `requestGuildMembers` utile de bout en bout. *Fait dans le lot « Couverture des événements dispatch »
+  ci-dessous (`GuildMembersChunkEvent`).*
+
+## Couverture des événements Gateway dispatch (v1 élargie)
+
+Le décodage ne typait que 10 événements dispatch ; tout le reste retombait sur
+`UnknownDispatchEvent`. Ajout d'un lot complet, tous routables via `discordClient.on<XxxEvent> { }` :
+guild lifecycle (`GUILD_UPDATE/DELETE`), membres (`GUILD_MEMBER_ADD/UPDATE/REMOVE`,
+`GUILD_MEMBERS_CHUNK`), rôles (`GUILD_ROLE_CREATE/UPDATE/DELETE`), `MESSAGE_DELETE_BULK`,
+réactions (`MESSAGE_REACTION_ADD/REMOVE/REMOVE_ALL/REMOVE_EMOJI`), `TYPING_START`,
+`VOICE_STATE_UPDATE` (nouveau modèle `VoiceState`) et threads
+(`THREAD_CREATE/UPDATE/DELETE/LIST_SYNC/MEMBER_UPDATE/MEMBERS_UPDATE`, avec enrichissement de
+`Channel` + `ThreadMetadata`/`ThreadMember`). Décision transverse : **tous les IDs de la couche
+event passent en `Snowflake`** — refactor inclus des wrappers existants (`MessageCreate/Update/Delete`).
+Nouveaux fichiers `websocket/src/gateway/events/{Guild,Member,Role,Reaction,Typing,Voice,Thread}Events.kt`,
+modèle `components/src/components/VoiceState.kt`. Tests : `DispatchCoverageTest` (un décodage par event).
+Dette résiduelle :
+
+- [ ] **Modèles `Member`/`Message` partiels.** Plusieurs events réutilisent `Member`/`Message` qui
+  n'exposent pas tous les champs Gateway (`premium_since`, `pending`, `attachments`, `reactions`…) ;
+  `ignoreUnknownKeys` les tolère mais ils ne sont pas typés. À enrichir au fil du besoin.
+- [ ] **IDs `Long`/`String` dans les modèles.** Le refactor `Snowflake` est limité à la couche event ;
+  `Guild`/`Role`/`User`/`Member` gardent leurs IDs `Long`/`String` (incohérence pré-existante).
 
 ## Couverture des endpoints REST (v1 élargie)
 
