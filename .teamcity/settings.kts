@@ -266,13 +266,31 @@ object PublishPackages : BuildType({
             id = "create_release"
             scriptContent = """
                 set -e
-                gh release create "%release.tag%" \
-                  --repo Esteban-DA-COSTA/KtorDiscordAPI \
-                  --title "%release.tag%" \
-                  --generate-notes \
-                  "components/build/libs/components-jvm.jar#components-%release.version%.jar" \
-                  "websocket/build/libs/websocket-jvm.jar#websocket-%release.version%.jar" \
-                  "core/build/libs/core-jvm.jar#kda-%release.version%.jar"
+                REPO="Esteban-DA-COSTA/KtorDiscordAPI"
+
+                # 1. Crée la release avec changelog auto-généré
+                RESP=${'$'}(curl -sS -X POST "https://api.github.com/repos/${'$'}REPO/releases" \
+                  -H "Authorization: Bearer ${'$'}GH_TOKEN" \
+                  -H "Accept: application/vnd.github+json" \
+                  -d '{"tag_name":"%release.tag%","name":"%release.tag%","generate_release_notes":true}')
+
+                RELEASE_ID=${'$'}(echo "${'$'}RESP" | jq -r '.id')
+                if [ "${'$'}RELEASE_ID" = "null" ] || [ -z "${'$'}RELEASE_ID" ]; then
+                  echo "Échec création release : ${'$'}RESP"; exit 1
+                fi
+
+                # 2. Attache les jars comme assets
+                upload() {
+                  curl -sS -X POST \
+                    "https://uploads.github.com/repos/${'$'}REPO/releases/${'$'}RELEASE_ID/assets?name=${'$'}2" \
+                    -H "Authorization: Bearer ${'$'}GH_TOKEN" \
+                    -H "Content-Type: application/java-archive" \
+                    --data-binary @"${'$'}1" > /dev/null
+                }
+                upload components/build/libs/components-jvm.jar "components-%release.version%.jar"
+                upload websocket/build/libs/websocket-jvm.jar   "websocket-%release.version%.jar"
+                upload core/build/libs/core-jvm.jar             "kda-%release.version%.jar"
+                echo "Release %release.tag% créée (id=${'$'}RELEASE_ID) avec 3 assets."
             """.trimIndent()
         }
     }
