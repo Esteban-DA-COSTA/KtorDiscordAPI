@@ -1,0 +1,22 @@
+# Réglages communs aux modules publiés (components, core, websocket).
+# Source unique de la version : la changer ici la propage aux 3 modules.
+# Appliqué via `apply: [ //lib.module-template.yaml ]` dans chaque module.yaml.
+
+settings:
+  kotlin:
+    serialization: json
+  publishing:
+    enabled: true
+    group: io.github.esteban-da-costa
+    version: 1.0.0-beta
+
+repositories:
+  - id: github
+    url: https://maven.pkg.github.com/Esteban-DA-COSTA/KtorDiscordAPI
+    publish: true
+    credentials:
+      # Chemin résolu relativement à CE template (racine du projet), pas au module qui l'applique.
+      # Donc pas de `../` ici. (`//creds.properties` serait plus propre mais casse sous Windows : UNC.)
+      file: creds.properties
+      usernameKey: username
+      passwordKey: password

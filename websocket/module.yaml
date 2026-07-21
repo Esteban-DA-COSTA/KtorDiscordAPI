@@ -1,4 +1,8 @@
 product: jvm/lib
+
+apply:
+  - ../lib.module-template.yaml
+
 dependencies:
   - ../components
   - io.ktor:ktor-client-core-jvm:3.1.0: exported
@@ -8,20 +12,3 @@ dependencies:
   - io.ktor:ktor-serialization-kotlinx-json:3.1.0: exported
   - $kotlin.serialization.json: exported
   - io.github.oshai:kotlin-logging-jvm:5.1.0: exported
-
-settings:
-  kotlin:
-    serialization: json
-  publishing:
-    enabled: true
-    group: io.github.esteban-da-costa
-    version: 1.0.0-beta
-
-repositories:
-  - id: github
-    url: https://maven.pkg.github.com/Esteban-DA-COSTA/KtorDiscordAPI
-    publish: true
-    credentials:
-      file: ../creds.properties
-      usernameKey: username
-      passwordKey: password
