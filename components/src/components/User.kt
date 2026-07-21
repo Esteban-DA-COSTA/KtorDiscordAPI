@@ -6,18 +6,28 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class User(
     val id: Long,
-    val username: String?,
-    val discriminator: String?,
-    val avatar: String?,
-    val bot: Boolean?,
-    val system: Boolean?,
-    @SerialName("mfa_enabled") val mfaEnabled: Boolean?,
-    val banner: String?,
-    @SerialName("accent_color") val accentColor: Int?,
-    val locale: String?,
-    val verified: Boolean?,
-    val email: String?,
-    val flags: Int?,
-    @SerialName("premium_type") val premiumType: Int?,
-    @SerialName("public_flags") val publicFlags: Int?
+    val username: String? = null,
+    val discriminator: String? = null,
+    val avatar: String? = null,
+    val bot: Boolean? = null,
+    val system: Boolean? = null,
+    @SerialName("mfa_enabled") val mfaEnabled: Boolean? = null,
+    val banner: String? = null,
+    @SerialName("accent_color") val accentColor: Int? = null,
+    val locale: String? = null,
+    val verified: Boolean? = null,
+    val email: String? = null,
+    val flags: Int? = null,
+    @SerialName("premium_type") val premiumType: Int? = null,
+    @SerialName("public_flags") val publicFlags: Int? = null
+)
+
+/**
+ * Payload used to **open a DM** channel with a user (POST `/users/@me/channels`).
+ *
+ * @property recipientId the id of the user to open a DM with.
+ */
+@Serializable
+data class CreateDMPayload(
+    @SerialName("recipient_id") var recipientId: String,
 )

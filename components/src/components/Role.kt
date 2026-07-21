@@ -16,7 +16,7 @@ data class Role(
     val permissions: String,
     val managed: Boolean,
     val mentionable: Boolean,
-    val tags: ktordiscord.components.RoleTag? = null,
+    val tags: RoleTag? = null,
     val flags: Int = 0
 )
 
@@ -36,4 +36,14 @@ data class RolePayload(
     var icon: List<Byte>? = null,
     @SerialName("unicode_emoji") var unicodeEmoji: String? = null,
     var mentionable: Boolean = false
+)
+
+/**
+ * Single entry of the **modify role positions** payload (PATCH `/guilds/{id}/roles`): a role id and
+ * its new [position]. A `null` position leaves the role's position unchanged.
+ */
+@Serializable
+data class RolePositionPayload(
+    var id: String,
+    var position: Int? = null,
 )
