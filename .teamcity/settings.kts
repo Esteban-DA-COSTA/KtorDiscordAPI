@@ -212,7 +212,7 @@ object Qodana_1 : BuildType({
 
 object PublishPackages : BuildType({
     name = "Publish packages"
-    description = "Sur un tag v*, publie les modules sur GitHub Packages puis crée la release GitHub"
+    description = "Lancé manuellement : publie le dernier tag v* sur GitHub Packages puis crée la release GitHub"
 
     params {
         // Username GitHub Packages (public, pas secret) — propriétaire du repo par défaut.
@@ -234,10 +234,16 @@ object PublishPackages : BuildType({
             id = "resolve_version"
             scriptContent = """
                 set -e
-                TAG="%teamcity.build.branch%"
+                # Version = dernier tag v* atteignable depuis le commit courant (indépendant de la branche).
+                git fetch --tags --force --quiet || true
+                TAG=${'$'}(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo "")
+                if [ -z "${'$'}TAG" ]; then
+                  echo "##teamcity[buildProblem description='Aucun tag v* trouvé — impossible de déterminer la version']"
+                  exit 1
+                fi
                 VERSION="${'$'}{TAG#v}"
                 echo "Tag=${'$'}TAG  Version=${'$'}VERSION"
-                # Injecte la version du tag dans la source unique (indentation 4 espaces sous publishing:)
+                # Injecte la version dans la source unique (indentation 4 espaces sous publishing:)
                 sed -i "s/^    version:.*/    version: ${'$'}VERSION/" lib.module-template.yaml
                 echo "##teamcity[setParameter name='release.tag' value='${'$'}TAG']"
                 echo "##teamcity[setParameter name='release.version' value='${'$'}VERSION']"
@@ -292,13 +298,6 @@ object PublishPackages : BuildType({
                 upload core/build/libs/core-jvm.jar             "kda-%release.version%.jar"
                 echo "Release %release.tag% créée (id=${'$'}RELEASE_ID) avec 3 assets."
             """.trimIndent()
-        }
-    }
-
-    triggers {
-        vcs {
-            // Se déclenche sur les tags v* — nécessite `+:refs/tags/(v*)` dans le branch spec du VCS root.
-            branchFilter = "+:v*"
         }
     }
 
