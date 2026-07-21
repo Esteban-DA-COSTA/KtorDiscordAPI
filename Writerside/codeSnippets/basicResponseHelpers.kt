@@ -1,3 +1,7 @@
+import ktordiscord.components.snowflake
+
+val channelId = "123456789012345678".snowflake
+
 // Récupérer l'objet, ou null en cas d'échec
 val message = kda.sendMessage(channelId) { content = "Hello!" }.getOrNull()
 

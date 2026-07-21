@@ -4,10 +4,36 @@
 <instance-profile id="kda" name="Ktor Discord API"
 start-page="Home.topic">
     <toc-element topic="Home.topic"/>
-    <toc-element topic="Basic_usage.md"/>
-    <toc-element topic="Interactions.md"/>
-    <toc-element topic="Events.md"/>
-    <toc-element toc-title="Modules">
-        <toc-element topic="Core_module.md"/>
+    <toc-element toc-title="Démarrer">
+        <toc-element topic="Introduction.md"/>
+        <toc-element topic="Premiers_pas.md"/>
+    </toc-element>
+    <toc-element toc-title="Le client">
+        <toc-element topic="Client.md"/>
+        <toc-element topic="Connexion.md"/>
+        <toc-element topic="Presence.md"/>
+    </toc-element>
+    <toc-element toc-title="Interagir avec Discord">
+        <toc-element topic="Rest_overview.md"/>
+        <toc-element topic="Rest_messages.md"/>
+        <toc-element topic="Rest_channels.md"/>
+        <toc-element topic="Rest_guilds.md"/>
+        <toc-element topic="Rest_reactions.md"/>
+        <toc-element topic="Rest_users.md"/>
+    </toc-element>
+    <toc-element toc-title="Événements">
+        <toc-element topic="Events.md"/>
+        <toc-element topic="Events_catalog.md"/>
+    </toc-element>
+    <toc-element toc-title="Interactions">
+        <toc-element topic="Commands.md"/>
+        <toc-element topic="Components.md"/>
+        <toc-element topic="Interaction_responses.md"/>
+    </toc-element>
+    <toc-element topic="Message_dsl.md"/>
+    <toc-element toc-title="Avancé">
+        <toc-element topic="Adv_architecture.md"/>
+        <toc-element topic="Adv_serialization.md"/>
+        <toc-element topic="Adv_gateway.md"/>
     </toc-element>
 </instance-profile>
