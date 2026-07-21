@@ -11,6 +11,14 @@ To apply the patch, change the buildType with id = 'GenerateDoc'
 accordingly, and delete the patch script.
 */
 changeBuildType(RelativeId("GenerateDoc")) {
+    vcs {
+
+        check(branchFilter == "+:main") {
+            "Unexpected option value: branchFilter = $branchFilter"
+        }
+        branchFilter = "+:*"
+    }
+
     triggers {
         val trigger1 = find<VcsTrigger> {
             vcs {
