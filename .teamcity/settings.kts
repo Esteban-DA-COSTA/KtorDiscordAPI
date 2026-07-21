@@ -84,7 +84,7 @@ object GenerateDoc : BuildType({
     params {
         // Secret : PAT fine-grained, scope 'Contents: write' sur ce repo uniquement.
         // Remplacer par le token chiffré généré via l'UI TeamCity (icône clé).
-        password("env.GH_PAGES_TOKEN", "credentialsJSON:REMPLACER-PAR-LE-TOKEN-CHIFFRE")
+        password("env.GH_PAGES_TOKEN", "credentialsJSON:ffdd292f-4e06-4799-a131-f7d8695583e6")
         param("docs.instance", "Writerside/kda")
         param("docs.artifact", "webHelpKDA2-all.zip")
         param("docs.repo", "github.com/Esteban-DA-COSTA/KtorDiscordAPI.git")
