@@ -6,7 +6,6 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.websocket.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
@@ -16,6 +15,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
+import ktordiscord.components.Message
 import ktordiscord.components.MessagePayload
 import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.interactions.ApplicationCommandData
@@ -184,9 +184,9 @@ class DiscordClient private constructor(internal val token: String) {
      *
      * @param channelId the channel id to send a message
      * @param init the message builder function
-     * @return the Http response from discord
+     * @return a [DiscordResponse] wrapping the created message
      */
-    suspend fun sendMessage(channelId: String, init: ResponseScope.() -> Unit): HttpResponse {
+    suspend fun sendMessage(channelId: String, init: ResponseScope.() -> Unit): DiscordResponse<Message> {
         val message = ResponseScope(this).apply(init).build()
         return createChannelMessage(channelId, message)
     }
