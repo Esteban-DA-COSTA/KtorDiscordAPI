@@ -3,6 +3,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.Qodana
 import jetbrains.buildServer.configs.kotlin.buildSteps.qodana
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.projectFeatures.youtrack
+import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 
@@ -99,6 +100,14 @@ object GenerateDoc : BuildType({
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
+    }
+
+    triggers {
+        vcs {
+            quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
+            branchFilter = "+:main"
+            enableQueueOptimization = false
+        }
     }
 
     steps {
@@ -265,7 +274,7 @@ object PublishPackages : BuildType({
                   --generate-notes \
                   "components/build/libs/components-jvm.jar#components-%release.version%.jar" \
                   "websocket/build/libs/websocket-jvm.jar#websocket-%release.version%.jar" \
-                  "core/build/libs/core-jvm.jar#core-%release.version%.jar"
+                  "core/build/libs/core-jvm.jar#kda-%release.version%.jar"
             """.trimIndent()
         }
     }

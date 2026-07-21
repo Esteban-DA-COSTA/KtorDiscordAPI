@@ -3,6 +3,12 @@ product: jvm/lib
 apply:
   - ../lib.module-template.yaml
 
+settings:
+  # Nom publié de l'artefact principal (défaut = nom du module, ici "core").
+  # Les autres réglages de publishing (enabled/group/version) viennent du template.
+  publishing:
+    artifactId: kda
+
 dependencies:
   - ../components: exported
   - ../websocket: exported
