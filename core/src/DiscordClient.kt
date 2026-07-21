@@ -224,6 +224,40 @@ class DiscordClient private constructor(internal val token: String) {
     }
 
     /**
+     * Update the bot's presence (OP 3): its status and, optionally, one activity.
+     *
+     * Requires an active Gateway connection ([login]); no-ops with a warning otherwise.
+     *
+     * ```
+     * client.updatePresence {
+     *     status = StatusTypeEnum.DO_NOT_DISTURB
+     *     playing("Ktor Discord API")
+     * }
+     * ```
+     *
+     * @param init the presence builder function.
+     */
+    suspend fun updatePresence(init: PresenceScope.() -> Unit) {
+        wssSession.sendPresenceUpdate(PresenceScope().apply(init).build())
+    }
+
+    /**
+     * Request (and chunk) the members of a guild (OP 8). Discord answers over the Gateway with one or
+     * more `GUILD_MEMBERS_CHUNK` events. Requires the `GUILD_MEMBERS` privileged intent and an active
+     * connection ([login]); no-ops with a warning otherwise.
+     *
+     * ```
+     * client.requestGuildMembers(guildId) { limit = 0 } // every member
+     * ```
+     *
+     * @param guildId the guild whose members are requested.
+     * @param init the request builder function.
+     */
+    suspend fun requestGuildMembers(guildId: String, init: RequestGuildMembersScope.() -> Unit = {}) {
+        wssSession.sendRequestGuildMembers(RequestGuildMembersScope(guildId).apply(init).build())
+    }
+
+    /**
      * Push every command declared via `on(name) { define { } }` to Discord. Commands are grouped by
      * scope (global / per guild) and each scope is written with a single bulk-overwrite request, so
      * commands not declared here are removed from that scope.
