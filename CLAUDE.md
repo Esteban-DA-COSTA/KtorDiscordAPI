@@ -13,6 +13,10 @@ Ce fichier guide Claude Code lorsqu'il travaille sur ce dépôt.
 
 L'API Discord ciblée est la **v10** (`DiscordClient.apiVersion`).
 
+## Suivi des tickets (YouTrack)
+
+Le projet YouTrack associé à ce dépôt est **KDA** (accessible via le MCP YouTrack). Les tickets, US et bugs sont tracés là (états `To Do` / `In Progress` / `Resolved`, champs `Priority`, `Subsystem`). Consulter ce projet pour la liste des travaux restants, en complément de `IMPROVEMENTS.md`.
+
 ## Build : Kotlin Toolchain (pas Gradle)
 
 Le projet utilise la [Kotlin Toolchain](https://github.com/JetBrains/kotlin-toolchain) de JetBrains (anciennement Amper). Il n'y a **aucun fichier Gradle** ; la configuration se fait via `project.yaml` (racine) et un `module.yaml` par module.

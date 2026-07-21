@@ -4,6 +4,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.qodana
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.projectFeatures.youtrack
 import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
+import jetbrains.buildServer.configs.kotlin.triggers.vcs
 
 /*
 The settings script is an entry point for defining a TeamCity
@@ -78,9 +79,76 @@ object Build : BuildType({
 
 object GenerateDoc : BuildType({
     name = "Generate doc"
+    description = "Build l'instance Writerside 'kda' et la publie sur GitHub Pages (branche gh-pages)"
+
+    params {
+        // Secret : PAT fine-grained, scope 'Contents: write' sur ce repo uniquement.
+        // Remplacer par le token chiffré généré via l'UI TeamCity (icône clé).
+        password("env.GH_PAGES_TOKEN", "credentialsJSON:REMPLACER-PAR-LE-TOKEN-CHIFFRE")
+        param("docs.instance", "Writerside/kda")
+        param("docs.artifact", "webHelpKDA2-all.zip")
+        param("docs.repo", "github.com/Esteban-DA-COSTA/KtorDiscordAPI.git")
+    }
 
     vcs {
         root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+
+    steps {
+        script {
+            name = "Build docs"
+            id = "build_docs"
+            scriptContent = """
+                export DISPLAY=:99
+                Xvfb :99 &
+                /opt/builder/bin/idea.sh helpbuilderinspect \
+                  --source-dir "%teamcity.build.checkoutDir%/Writerside" \
+                  --product "%docs.instance%" \
+                  --runner other \
+                  --output-dir "%teamcity.build.checkoutDir%/artifacts"
+                test -f "artifacts/%docs.artifact%"
+            """.trimIndent()
+            dockerImage = "registry.jetbrains.team/p/writerside/builder/writerside-builder:243.21565"
+            dockerPull = true
+        }
+        script {
+            name = "Check report"
+            id = "check_report"
+            scriptContent = """
+                if command -v jq >/dev/null; then
+                  n=${'$'}(jq '[.. | .problems? // empty] | add | length' artifacts/report.json 2>/dev/null || echo 0)
+                  echo "Problèmes détectés : ${'$'}n"
+                  [ "${'$'}n" = "0" ] || { echo "##teamcity[buildProblem description='Writerside report has problems']"; exit 1; }
+                fi
+            """.trimIndent()
+        }
+        script {
+            name = "Publish to gh-pages"
+            id = "publish_gh_pages"
+            scriptContent = """
+                rm -rf site && unzip -q -o "artifacts/%docs.artifact%" -d site
+                cd site
+                touch .nojekyll
+                git init -q
+                git checkout -q -b gh-pages
+                git config user.email "ci@teamcity"
+                git config user.name  "TeamCity CI"
+                git add -A
+                git commit -qm "Deploy docs (build %build.number%)"
+                git push -f "https://x-access-token:%env.GH_PAGES_TOKEN%@%docs.repo%" gh-pages
+            """.trimIndent()
+        }
+    }
+
+    triggers {
+        vcs {
+            triggerRules = "+:Writerside/**"
+        }
+    }
+
+    requirements {
+        exists("docker.server.version")
     }
 })
 
