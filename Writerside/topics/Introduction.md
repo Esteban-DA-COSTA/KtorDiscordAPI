@@ -31,8 +31,8 @@ Client, kotlinx.serialization et kotlinx.coroutines.
 
 ## Ajouter la dépendance
 
-La bibliothèque est publiée sur **GitHub Packages**. Un consommateur ne dépend que du module `core`
-(il ré-exporte `components` et `websocket`).
+La bibliothèque est publiée sur **GitHub Packages**. Un consommateur ne dépend que de l'artefact
+`kda` (le module `core`, publié sous ce nom) : il ré-exporte `components` et `websocket`.
 
 ```kotlin
 // build.gradle.kts
@@ -47,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.esteban-da-costa:core:1.0.0-beta")
+    implementation("io.github.esteban-da-costa:kda:1.0.0-beta")
 }
 ```
 
