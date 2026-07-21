@@ -1,3 +1,6 @@
 product: jvm/app
 dependencies:
   - ../core
+  # Logging backend for the demo bot only. The library modules (core/components/websocket)
+  # depend on the kotlin-logging facade, never on a backend, so consumers pick their own.
+  - ch.qos.logback:logback-classic:1.5.3
