@@ -114,6 +114,15 @@ class DiscordClient private constructor(internal val token: String) {
     private val commandHandlers = mutableMapOf<String, CommandHandler>()
     private val componentHandlers = mutableMapOf<String, ComponentHandler>()
 
+    // Command definitions declared via `on(name) { define { } }`, pushed to Discord on login().
+    private class CommandDefinition(
+        val name: String,
+        val guildId: String?,
+        val init: ktordiscord.components.interactions.ApplicationCommandPayload.() -> Unit,
+    )
+
+    private val pendingCommandDefinitions = mutableListOf<CommandDefinition>()
+
     // Event routing registry: event class -> handlers registered for it (multiple listeners allowed,
     // invoked in registration order). Keyed by the concrete DispatchEvent subclass (all are leaf
     // data classes), so `event::class` matches exactly what `on<T>()` registered under T::class.
@@ -209,7 +218,31 @@ class DiscordClient private constructor(internal val token: String) {
      *
      * @see [DiscordIntents](https://discord.com/developers/docs/events/gateway#gateway-intents)
      */
-    fun login(intents: Int) = wssSession.connect(intents)
+    fun login(intents: Int): Job {
+        scope.launch { syncCommandDefinitions() }
+        return wssSession.connect(intents)
+    }
+
+    /**
+     * Push every command declared via `on(name) { define { } }` to Discord. Commands are grouped by
+     * scope (global / per guild) and each scope is written with a single bulk-overwrite request, so
+     * commands not declared here are removed from that scope.
+     */
+    private suspend fun syncCommandDefinitions() {
+        if (pendingCommandDefinitions.isEmpty()) return
+
+        fun CommandDefinition.toPayload() =
+            ktordiscord.components.interactions.ApplicationCommandPayload(name = name).apply(init)
+
+        val (guildDefs, globalDefs) = pendingCommandDefinitions.partition { it.guildId != null }
+
+        if (globalDefs.isNotEmpty()) {
+            bulkOverwriteGlobalApplicationCommands(globalDefs.map { it.toPayload() })
+        }
+        guildDefs.groupBy { it.guildId!! }.forEach { (guildId, defs) ->
+            bulkOverwriteGuildApplicationCommands(guildId, defs.map { it.toPayload() })
+        }
+    }
 
     /**
      * Shut the client down: cancel every coroutine it owns (Gateway loop, heartbeat) and release
@@ -247,11 +280,13 @@ class DiscordClient private constructor(internal val token: String) {
     }
 
     /**
-     * Shorthand for [on] with [InteractionKind.Command]: register the [handler] run when the
-     * application command named [commandName] is invoked.
+     * Configure the application command named [commandName]. The [init] block runs once against a
+     * [CommandScope], which can both **declare** the command on Discord (`define { }`, synced on
+     * [login]) and register how it is **handled** (`respond { }` / `defer()` / `handle { }`).
      *
      * ```
      * client.on("ping") {
+     *     define { description = "Ping the bot" }   // create-or-update on login()
      *     respond {
      *         content = "pong"
      *         button("again") { style = ButtonStyle.PRIMARY }.click { respond { content = "pong" } }
@@ -259,7 +294,7 @@ class DiscordClient private constructor(internal val token: String) {
      * }
      * ```
      */
-    fun on(commandName: String, handler: CommandHandler) = on(InteractionKind.Command, commandName, handler)
+    fun on(commandName: String, init: CommandScope.() -> Unit) = CommandScope(this, commandName).apply(init)
 
     /**
      * Register a [handler] run for every Gateway event of type [T] (e.g. `MessageCreateEvent`).
@@ -294,6 +329,15 @@ class DiscordClient private constructor(internal val token: String) {
     // Called by InteractionKind.Command.register to bind a command handler to its name.
     internal fun registerCommandHandler(commandName: String, handler: CommandHandler) {
         commandHandlers[commandName] = handler
+    }
+
+    // Called by CommandScope.define to record a command definition, synced to Discord on login().
+    internal fun registerCommandDefinition(
+        name: String,
+        guildId: String?,
+        init: ktordiscord.components.interactions.ApplicationCommandPayload.() -> Unit,
+    ) {
+        pendingCommandDefinitions.add(CommandDefinition(name, guildId, init))
     }
 
     // Called by ButtonHandle.click / InteractionKind.Component.register to bind a component callback.

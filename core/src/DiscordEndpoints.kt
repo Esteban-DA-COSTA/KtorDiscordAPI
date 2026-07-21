@@ -7,4 +7,5 @@ enum class DiscordEndpoints(val text: String) {
     CHANNELS("channels"),
     MESSAGES("messages"),
     COMMANDS("commands"),
+    PERMISSIONS("permissions"),
 }
