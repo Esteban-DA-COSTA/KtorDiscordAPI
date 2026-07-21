@@ -3,7 +3,6 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.Qodana
 import jetbrains.buildServer.configs.kotlin.buildSteps.qodana
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.projectFeatures.youtrack
-import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 
@@ -65,6 +64,12 @@ object Build : BuildType({
     vcs {
         root(DslContext.settingsRoot)
     }
+    
+    triggers {
+        vcs { 
+            branchFilter = "+:main"
+        }
+    }
 
     steps {
         script {
@@ -100,14 +105,7 @@ object GenerateDoc : BuildType({
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
-    }
-
-    triggers {
-        vcs {
-            quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_DEFAULT
-            branchFilter = "+:main"
-            enableQueueOptimization = false
-        }
+        branchFilter = "+:main"
     }
 
     steps {
