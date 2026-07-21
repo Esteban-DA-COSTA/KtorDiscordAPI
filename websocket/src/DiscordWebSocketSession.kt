@@ -1,5 +1,6 @@
 package ktordiscord.gateway
 
+import ktordiscord.components.Presence
 import ktordiscord.components.interactions.Interaction
 import ktordiscord.gateway.events.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -219,19 +220,52 @@ class DiscordWebSocketSession(
      * Send Resume (OP 6) to restore a previous session.
      */
     private suspend fun sendResume() {
+        val session = connectedSessionOrNull("Resume") ?: return
         wssLogger.info { "Sending RESUME for session $sessionId, seq=$lastSequenceNumber" }
         val resume = ResumeEvent(token, sessionId!!, lastSequenceNumber ?: 0)
-        val frame = wssSession.converter?.serialize(resume) as Frame.Text
-        wssSession.send(frame)
+        session.send(session.converter?.serialize(resume) as Frame.Text)
     }
 
     /**
      * Send Identify (OP 2) to start a new session.
      */
     private suspend fun initiateIdentification() {
+        val session = connectedSessionOrNull("Identify") ?: return
         val identify = IdentifyEvent(token, intents)
-        val frame = wssSession.converter?.serialize(identify) as Frame.Text
-        wssSession.send(frame)
+        session.send(session.converter?.serialize(identify) as Frame.Text)
+    }
+
+    /**
+     * Send a Presence Update (OP 3): advertise the bot's status and activities.
+     */
+    suspend fun sendPresenceUpdate(presence: Presence) {
+        val session = connectedSessionOrNull("PresenceUpdate") ?: return
+        val event = UpdatePresenceEvent(presence)
+        session.send(session.converter?.serialize(event) as Frame.Text)
+    }
+
+    /**
+     * Send a Request Guild Members (OP 8): request (and chunk) a guild's member list.
+     */
+    suspend fun sendRequestGuildMembers(data: RequestGuildMembersData) {
+        val session = connectedSessionOrNull("RequestGuildMembers") ?: return
+        val event = RequestGuildMembersEvent(data)
+        session.send(session.converter?.serialize(event) as Frame.Text)
+    }
+
+    /**
+     * The active socket session, or `null` (with a warning) when called before the gateway is
+     * connected — `wssSession` is `lateinit`, so sending before [connect] would otherwise throw.
+     *
+     * Callers serialize each outgoing event at its concrete type: routing through the sealed [Event]
+     * type would pick `EventSerializer`, whose `serialize` is not implemented.
+     */
+    private fun connectedSessionOrNull(command: String): DefaultClientWebSocketSession? {
+        if (!::wssSession.isInitialized) {
+            wssLogger.warn { "Cannot send $command: gateway not connected" }
+            return null
+        }
+        return wssSession
     }
 
     /**

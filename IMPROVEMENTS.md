@@ -51,6 +51,26 @@ Système `discordClient.on("cmd") { respond { button(...).click { } } }` : route
 - [ ] **`reply` limité aux events porteurs d'un channel.** Fourni pour `MessageCreateEvent`/`MessageUpdateEvent` (extensions typées, `@JvmName` pour l'erasure). Les autres events accèdent au client via `event` + les fonctions REST existantes.
 - [ ] **Multi-handlers non ordonnancés.** Chaque handler d'un même type tourne dans son propre coroutine : pas de garantie d'ordre ni de « stop propagation ».
 
+## Commandes Gateway sortantes (v1 livrée)
+
+Jusqu'ici seuls Identify (OP 2) / Resume (OP 6) / Heartbeat (OP 1) étaient émis. Ajout de l'envoi de
+**Presence Update (OP 3)** et **Request Guild Members (OP 8)**, exposés sur `DiscordClient`
+(`updatePresence { }`, `requestGuildMembers(guildId) { }`). Factorisation de l'enveloppe `{op, d}`
+dans `OutgoingEventSerializer` (base réutilisable, sur le modèle d'`IntEnumSerializer` ; Identify /
+Resume repointés dessus). Nouveau modèle sortant léger `BotActivity` + enum `ActivityType` ; `Presence`
+repointé sur `BotActivity` et `status` typé `StatusTypeEnum`. Helper d'envoi générique `sendGateway`
+(reified, garde l'état de connexion) dans `DiscordWebSocketSession`. Voir
+`websocket/src/gateway/events/{OutgoingEventSerializer,UpdatePresenceEvent,RequestGuildMembersEvent}.kt`,
+`core/src/gateway/OutgoingCommandScopes.kt`. Dette résiduelle :
+
+- [ ] **Voice State Update (OP 4) sortant.** Non implémenté. → event sortant + payload
+  (`guild_id`, `channel_id?`, `self_mute`, `self_deaf`) sur la base `OutgoingEventSerializer`, et
+  méthode publique sur `DiscordClient` (rejoindre/quitter un salon vocal).
+- [ ] **Réception des `GUILD_MEMBERS_CHUNK`.** La commande OP 8 est envoyée mais la réponse n'est pas
+  décodée : ajouter `GUILD_MEMBERS_CHUNK` dans `DispatchEvents`, un modèle `GuildMembersChunk`, et la
+  branche correspondante dans `EventSerializer.decodeDispatchEvent` (`Event.kt`) pour rendre
+  `requestGuildMembers` utile de bout en bout.
+
 ## Couverture des endpoints REST (v1 élargie)
 
 Extension large de `core/src/rest/` par ressource Discord (retour `HttpResponse` brut, statu quo) :
