@@ -1,3 +1,6 @@
 **/build/*
 .gradle/*
 .idea/*
+
+# NOTE: creds.properties is intentionally TRACKED with placeholder values (Amper requires the file to
+# exist to load the project model). Real tokens must NEVER be committed — see the header of that file.
