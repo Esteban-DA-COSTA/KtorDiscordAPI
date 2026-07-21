@@ -2,6 +2,7 @@ package ktordiscord.gateway.events
 
 import ktordiscord.components.Member
 import ktordiscord.components.Message
+import ktordiscord.components.Snowflake
 import ktordiscord.components.User
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -11,7 +12,7 @@ data class MessageCreateEvent(
     override var sequenceId: Int,
     val message: Message,
     @SerialName("guild_id")
-    val guildId: String?,
+    val guildId: Snowflake?,
     val member: Member?,
     val mentions: List<User>?
 ) : DispatchEvent()
@@ -21,7 +22,7 @@ data class MessageUpdateEvent(
     override var sequenceId: Int,
     val message: Message,
     @SerialName("guild_id")
-    val guildId: String?,
+    val guildId: Snowflake?,
     val member: Member?,
     val mentions: List<User>?
 ) : DispatchEvent()
@@ -29,9 +30,22 @@ data class MessageUpdateEvent(
 @Serializable
 data class MessageDeleteEvent(
     override var sequenceId: Int = 0,
-    val id: String,
+    val id: Snowflake,
     @SerialName("channel_id")
-    val channelId: String,
+    val channelId: Snowflake,
     @SerialName("guild_id")
-    val guildId: String?,
+    val guildId: Snowflake?,
+) : DispatchEvent()
+
+/**
+ * `MESSAGE_DELETE_BULK`: multiple messages were deleted at once (e.g. bulk-delete).
+ */
+@Serializable
+data class MessageDeleteBulkEvent(
+    override var sequenceId: Int = 0,
+    val ids: List<Snowflake> = emptyList(),
+    @SerialName("channel_id")
+    val channelId: Snowflake,
+    @SerialName("guild_id")
+    val guildId: Snowflake?,
 ) : DispatchEvent()

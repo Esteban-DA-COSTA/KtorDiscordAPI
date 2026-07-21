@@ -20,6 +20,52 @@ data class Channel(
     @SerialName("user_limit")
     val userLimit: Int? = null,
     val recipients: List<User>? = null,
+    @SerialName("rate_limit_per_user")
+    val rateLimitPerUser: Int? = null,
+    @SerialName("owner_id")
+    val ownerId: Snowflake? = null,
+    @SerialName("parent_id")
+    val parentId: Snowflake? = null,
+    @SerialName("message_count")
+    val messageCount: Int? = null,
+    @SerialName("member_count")
+    val memberCount: Int? = null,
+    @SerialName("thread_metadata")
+    val threadMetadata: ThreadMetadata? = null,
+    val member: ThreadMember? = null,
+)
+
+/**
+ * Thread-specific fields carried by a [Channel] that is a thread (embedded in the `thread_metadata`
+ * object of the channel payload).
+ */
+@Serializable
+data class ThreadMetadata(
+    val archived: Boolean = false,
+    @SerialName("auto_archive_duration")
+    val autoArchiveDuration: Int? = null,
+    @SerialName("archive_timestamp")
+    val archiveTimestamp: String? = null,
+    val locked: Boolean = false,
+    val invitable: Boolean? = null,
+    @SerialName("create_timestamp")
+    val createTimestamp: String? = null,
+)
+
+/**
+ * Represents a member of a thread (the current user's per-thread state, or an entry in
+ * `THREAD_MEMBERS_UPDATE` / `THREAD_LIST_SYNC`).
+ *
+ * [id] and [userId] are omitted when the object describes the current user within a channel payload.
+ */
+@Serializable
+data class ThreadMember(
+    val id: Snowflake? = null,
+    @SerialName("user_id")
+    val userId: Snowflake? = null,
+    @SerialName("join_timestamp")
+    val joinTimestamp: String? = null,
+    val flags: Int = 0,
 )
 
 /**

@@ -1,5 +1,6 @@
 package ktordiscord.gateway.events
 
+import ktordiscord.components.Snowflake
 import ktordiscord.components.enums.ChannelTypes
 import ktordiscord.components.enums.InteractionTypes
 import ktordiscord.gateway.OPCode
@@ -37,10 +38,10 @@ class EventDecodeTest {
     fun unknownDispatchEventDoesNotThrow() {
         val event = json.decodeFromString(
             Event.serializer(),
-            """{"op":0,"t":"TYPING_START","s":5,"d":{"foo":"bar"}}"""
+            """{"op":0,"t":"WEBHOOKS_UPDATE","s":5,"d":{"foo":"bar"}}"""
         )
         assertIs<UnknownDispatchEvent>(event)
-        assertEquals("TYPING_START", event.name)
+        assertEquals("WEBHOOKS_UPDATE", event.name)
         assertEquals(5, event.sequenceId)
     }
 
@@ -71,6 +72,6 @@ class EventDecodeTest {
             """{"op":0,"t":"MESSAGE_CREATE","s":2,"d":{"content":"hi","guild_id":"123456"}}"""
         )
         assertIs<MessageCreateEvent>(event)
-        assertEquals("123456", event.guildId)
+        assertEquals(Snowflake("123456"), event.guildId)
     }
 }
