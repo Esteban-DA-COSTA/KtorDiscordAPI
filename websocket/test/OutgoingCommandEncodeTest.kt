@@ -2,6 +2,7 @@ package ktordiscord.gateway.events
 
 import ktordiscord.components.BotActivity
 import ktordiscord.components.Presence
+import ktordiscord.components.Snowflake
 import ktordiscord.components.enums.ActivityType
 import ktordiscord.components.enums.StatusTypeEnum
 import kotlinx.serialization.json.Json
@@ -47,7 +48,7 @@ class OutgoingCommandEncodeTest {
 
     @Test
     fun requestGuildMembersEncodesOp8Envelope() {
-        val event = RequestGuildMembersEvent(RequestGuildMembersData(guildId = "123456", limit = 0))
+        val event = RequestGuildMembersEvent(RequestGuildMembersData(guildId = Snowflake("123456"), limit = 0))
 
         val root = json.encodeToString(RequestGuildMembersEvent.serializer(), event).let(json::parseToJsonElement).jsonObject
 

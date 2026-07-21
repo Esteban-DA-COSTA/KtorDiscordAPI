@@ -32,7 +32,7 @@ class DispatchCoverageTest {
     fun guildUpdateDecodes() {
         val event = decode<GuildUpdateEvent>(
             "GUILD_UPDATE", 1,
-            """{"id":10,"name":"My Guild","afk_timeout":300,"verification_level":1,"default_message_notifications":0,"explicit_content_filter":0,"roles":[],"emojis":[],"features":[],"mfa_level":0,"system_channel_flags":0,"premium_tier":0,"preferred_locale":"en-US","nsfw_level":0,"stickers":[],"premium_progress_bar_enabled":false}"""
+            """{"id":"10","name":"My Guild","afk_timeout":300,"verification_level":1,"default_message_notifications":0,"explicit_content_filter":0,"roles":[],"emojis":[],"features":[],"mfa_level":0,"system_channel_flags":0,"premium_tier":0,"preferred_locale":"en-US","nsfw_level":0,"stickers":[],"premium_progress_bar_enabled":false}"""
         )
         assertEquals(1, event.sequenceId)
         assertEquals("My Guild", event.guild.name)
@@ -49,42 +49,42 @@ class DispatchCoverageTest {
     fun guildMemberAddDecodes() {
         val event = decode<GuildMemberAddEvent>(
             "GUILD_MEMBER_ADD", 3,
-            """{"guild_id":"10","nick":"Bob","user":{"id":42}}"""
+            """{"guild_id":"10","nick":"Bob","user":{"id":"42"}}"""
         )
         assertEquals(3, event.sequenceId)
         assertEquals(Snowflake("10"), event.guildId)
         assertEquals("Bob", event.member.nick)
-        assertEquals(42L, event.member.user?.id)
+        assertEquals(Snowflake("42"), event.member.user?.id)
     }
 
     @Test
     fun guildMemberUpdateDecodes() {
         val event = decode<GuildMemberUpdateEvent>(
             "GUILD_MEMBER_UPDATE", 4,
-            """{"guild_id":"10","roles":["1","2"],"user":{"id":42},"nick":"Bobby"}"""
+            """{"guild_id":"10","roles":["1","2"],"user":{"id":"42"},"nick":"Bobby"}"""
         )
         assertEquals(4, event.sequenceId)
         assertEquals(Snowflake("10"), event.guildId)
         assertEquals(listOf(Snowflake("1"), Snowflake("2")), event.roles)
-        assertEquals(42L, event.user.id)
+        assertEquals(Snowflake("42"), event.user.id)
     }
 
     @Test
     fun guildMemberRemoveDecodes() {
         val event = decode<GuildMemberRemoveEvent>(
             "GUILD_MEMBER_REMOVE", 5,
-            """{"guild_id":"10","user":{"id":42}}"""
+            """{"guild_id":"10","user":{"id":"42"}}"""
         )
         assertEquals(5, event.sequenceId)
         assertEquals(Snowflake("10"), event.guildId)
-        assertEquals(42L, event.user.id)
+        assertEquals(Snowflake("42"), event.user.id)
     }
 
     @Test
     fun guildMembersChunkDecodes() {
         val event = decode<GuildMembersChunkEvent>(
             "GUILD_MEMBERS_CHUNK", 6,
-            """{"guild_id":"10","members":[{"user":{"id":42}}],"chunk_index":0,"chunk_count":1}"""
+            """{"guild_id":"10","members":[{"user":{"id":"42"}}],"chunk_index":0,"chunk_count":1}"""
         )
         assertEquals(6, event.sequenceId)
         assertEquals(Snowflake("10"), event.guildId)
@@ -96,7 +96,7 @@ class DispatchCoverageTest {
     fun guildRoleCreateDecodes() {
         val event = decode<GuildRoleCreateEvent>(
             "GUILD_ROLE_CREATE", 7,
-            """{"guild_id":"10","role":{"id":99,"name":"Admin","description":null,"color":0,"hoist":false,"icon":null,"unicode_emoji":null,"position":1,"permissions":"0","managed":false,"mentionable":true}}"""
+            """{"guild_id":"10","role":{"id":"99","name":"Admin","description":null,"color":0,"hoist":false,"icon":null,"unicode_emoji":null,"position":1,"permissions":"0","managed":false,"mentionable":true}}"""
         )
         assertEquals(7, event.sequenceId)
         assertEquals(Snowflake("10"), event.guildId)

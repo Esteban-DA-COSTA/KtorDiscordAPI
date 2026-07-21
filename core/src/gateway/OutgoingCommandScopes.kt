@@ -3,6 +3,7 @@ package ktordiscord.core
 import ktordiscord.builders.DiscordDsl
 import ktordiscord.components.BotActivity
 import ktordiscord.components.Presence
+import ktordiscord.components.Snowflake
 import ktordiscord.components.enums.ActivityType
 import ktordiscord.components.enums.StatusTypeEnum
 import ktordiscord.gateway.events.RequestGuildMembersData
@@ -78,7 +79,7 @@ class PresenceScope internal constructor() {
  * prefix to search, or set [userIds] to fetch specific members. Requires the `GUILD_MEMBERS` intent.
  */
 @DiscordDsl
-class RequestGuildMembersScope internal constructor(private val guildId: String) {
+class RequestGuildMembersScope internal constructor(private val guildId: Snowflake) {
     /** Name prefix to match; empty string matches everyone. Ignored when [userIds] is set. */
     var query: String = ""
 
@@ -89,7 +90,7 @@ class RequestGuildMembersScope internal constructor(private val guildId: String)
     var presences: Boolean? = null
 
     /** Specific member ids to fetch, instead of a [query]. */
-    var userIds: List<String>? = null
+    var userIds: List<Snowflake>? = null
 
     /** Client-chosen token echoed back on the resulting chunks, to correlate the response. */
     var nonce: String? = null

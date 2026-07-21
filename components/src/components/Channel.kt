@@ -82,7 +82,7 @@ data class ModifyChannelPayload(
     @SerialName("rate_limit_per_user") var rateLimitPerUser: Int? = null,
     var bitrate: Int? = null,
     @SerialName("user_limit") var userLimit: Int? = null,
-    @SerialName("parent_id") var parentId: String? = null,
+    @SerialName("parent_id") var parentId: Snowflake? = null,
     @SerialName("permission_overwrites") var permissionOverwrites: List<Overwrite>? = null,
 )
 
@@ -99,7 +99,7 @@ data class CreateChannelPayload(
     @SerialName("user_limit") var userLimit: Int? = null,
     @SerialName("rate_limit_per_user") var rateLimitPerUser: Int? = null,
     var position: Int? = null,
-    @SerialName("parent_id") var parentId: String? = null,
+    @SerialName("parent_id") var parentId: Snowflake? = null,
     var nsfw: Boolean? = null,
     @SerialName("permission_overwrites") var permissionOverwrites: List<Overwrite>? = null,
 )
@@ -110,5 +110,5 @@ data class CreateChannelPayload(
  */
 @Serializable
 data class BulkDeleteMessagesPayload(
-    var messages: List<String> = emptyList(),
+    var messages: List<Snowflake> = emptyList(),
 )

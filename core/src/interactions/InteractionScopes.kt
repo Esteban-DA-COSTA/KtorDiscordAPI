@@ -1,6 +1,7 @@
 package ktordiscord.core
 
 import ktordiscord.builders.DiscordDsl
+import ktordiscord.components.Snowflake
 import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.interactions.ApplicationCommandPayload
 import ktordiscord.components.interactions.Interaction
@@ -23,7 +24,7 @@ sealed class InteractionScope(
 ) {
     protected suspend fun reply(type: InteractionCallbackTypes, init: (ResponseScope.() -> Unit)?) {
         val payload = init?.let { ResponseScope(client).apply(it).build() }
-        client.createInteractionResponse(interaction.id.value, interaction.token, type, payload)
+        client.createInteractionResponse(interaction.id, interaction.token, type, payload)
     }
 
     /**
@@ -88,7 +89,7 @@ class CommandScope internal constructor(
      * Because the sync uses bulk overwrite, commands **not** declared with `define` in the same scope
      * are removed from Discord on login (declarative registration, per Discord's startup guidance).
      */
-    fun define(guildId: String? = null, init: ApplicationCommandPayload.() -> Unit) =
+    fun define(guildId: Snowflake? = null, init: ApplicationCommandPayload.() -> Unit) =
         client.registerCommandDefinition(commandName, guildId, init)
 
     /**

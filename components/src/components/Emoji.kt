@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Emoji(
-    val id: Long? = null,
+    val id: Snowflake? = null,
     val name: String? = null,
     val roles: List<Role>? = null,
     val user: User? = null,
@@ -26,7 +26,7 @@ data class Emoji(
 data class CreateEmojiPayload(
     var name: String = "new_emoji",
     var image: String = "",
-    var roles: List<String>? = null,
+    var roles: List<Snowflake>? = null,
 )
 
 /**
@@ -35,5 +35,5 @@ data class CreateEmojiPayload(
 @Serializable
 data class ModifyEmojiPayload(
     var name: String? = null,
-    var roles: List<String>? = null,
+    var roles: List<Snowflake>? = null,
 )

@@ -2,6 +2,7 @@ package ktordiscord.components
 
 import ktordiscord.builders.DiscordDsl
 import ktordiscord.components.enums.EmbedTypes
+import ktordiscord.components.enums.MessageType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -12,16 +13,34 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Message(
-    val id: ktordiscord.components.Snowflake? = null,
+    val id: Snowflake? = null,
     @SerialName("channel_id")
-    val channelId: String? = null,
-    val author: ktordiscord.components.User? = null,
+    val channelId: Snowflake? = null,
+    val author: User? = null,
     val content: String? = null,
     val timestamp: String? = null,
     @SerialName("edited_timestamp")
     val editedTimestamp: String? = null,
     val tts: Boolean = false,
-    val embeds: List<ktordiscord.components.Embed>? = null,
+    @SerialName("mention_everyone")
+    val mentionEveryone: Boolean = false,
+    val mentions: List<User>? = null,
+    @SerialName("mention_roles")
+    val mentionRoles: List<Snowflake>? = null,
+    val embeds: List<Embed>? = null,
+    val reactions: List<Reaction>? = null,
+    val pinned: Boolean = false,
+    @SerialName("webhook_id")
+    val webhookId: Snowflake? = null,
+    val type: MessageType? = null,
+    val attachments: List<Attachment>? = null,
+    @SerialName("message_reference")
+    val messageReference: MessageReference? = null,
+    @SerialName("referenced_message")
+    val referencedMessage: Message? = null,
+    @SerialName("sticker_items")
+    val stickerItems: List<StickerItem>? = null,
+    val flags: Int? = null,
 )
 
 /**

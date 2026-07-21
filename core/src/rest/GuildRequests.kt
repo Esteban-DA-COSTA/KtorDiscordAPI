@@ -6,6 +6,7 @@ import ktordiscord.components.Guild
 import ktordiscord.components.Role
 import ktordiscord.components.RolePayload
 import ktordiscord.components.RolePositionPayload
+import ktordiscord.components.Snowflake
 import io.ktor.client.request.*
 import io.ktor.http.*
 
@@ -16,7 +17,7 @@ import io.ktor.http.*
  * @param rolePayload information of the role to create.
  * @return a [DiscordResponse] wrapping the created role.
  */
-suspend fun DiscordClient.createNewRole(guildId: String, rolePayload: RolePayload): DiscordResponse<Role> {
+suspend fun DiscordClient.createNewRole(guildId: Snowflake, rolePayload: RolePayload): DiscordResponse<Role> {
     return httpClient.post("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.ROLES.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -28,7 +29,7 @@ suspend fun DiscordClient.createNewRole(guildId: String, rolePayload: RolePayloa
  * @param: guildID the guild id that corresponds to the guild to get
  * @return a [DiscordResponse] wrapping the guild whose id was passed as a parameter
  * */
-suspend fun DiscordClient.getGuild(guildId: String): DiscordResponse<Guild> {
+suspend fun DiscordClient.getGuild(guildId: Snowflake): DiscordResponse<Guild> {
     return httpClient.get("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId") {
         buildDiscordHeader(token)
     }.decode()
@@ -41,7 +42,7 @@ suspend fun DiscordClient.getGuild(guildId: String): DiscordResponse<Guild> {
  * @param guildId the id of the guild.
  * @return a [DiscordResponse] wrapping a list of roles.
  */
-suspend fun DiscordClient.getRoles(guildId: String): DiscordResponse<List<Role>> {
+suspend fun DiscordClient.getRoles(guildId: Snowflake): DiscordResponse<List<Role>> {
     return httpClient.get("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.ROLES.text}") {
         buildDiscordHeader(token)
     }.decode()
@@ -55,7 +56,7 @@ suspend fun DiscordClient.getRoles(guildId: String): DiscordResponse<List<Role>>
  * @param guildId the id of the guild.
  * @return a [DiscordResponse] wrapping a list of channels.
  */
-suspend fun DiscordClient.getGuildChannels(guildId: String): DiscordResponse<List<Channel>> {
+suspend fun DiscordClient.getGuildChannels(guildId: Snowflake): DiscordResponse<List<Channel>> {
     return httpClient.get("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.CHANNELS.text}") {
         buildDiscordHeader(token)
     }.decode()
@@ -68,7 +69,7 @@ suspend fun DiscordClient.getGuildChannels(guildId: String): DiscordResponse<Lis
  * @param payload the channel to create ([CreateChannelPayload.name] is required).
  * @return a [DiscordResponse] wrapping the created channel.
  */
-suspend fun DiscordClient.createGuildChannel(guildId: String, payload: CreateChannelPayload): DiscordResponse<Channel> {
+suspend fun DiscordClient.createGuildChannel(guildId: Snowflake, payload: CreateChannelPayload): DiscordResponse<Channel> {
     return httpClient.post("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.CHANNELS.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -88,7 +89,7 @@ suspend fun DiscordClient.createGuildChannel(guildId: String, payload: CreateCha
  * @param payload the fields to update.
  * @return a [DiscordResponse] wrapping the updated role.
  */
-suspend fun DiscordClient.editRole(guildId: String, roleId: String, payload: RolePayload): DiscordResponse<Role> {
+suspend fun DiscordClient.editRole(guildId: Snowflake, roleId: Snowflake, payload: RolePayload): DiscordResponse<Role> {
     return httpClient.patch("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.ROLES.text}/$roleId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -102,7 +103,7 @@ suspend fun DiscordClient.editRole(guildId: String, roleId: String, payload: Rol
  * @param guildId the id of the guild.
  * @param roleId the id of the role to delete.
  */
-suspend fun DiscordClient.deleteRole(guildId: String, roleId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.deleteRole(guildId: Snowflake, roleId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.ROLES.text}/$roleId") {
         buildDiscordHeader(token)
     }.decodeEmpty()
@@ -115,7 +116,7 @@ suspend fun DiscordClient.deleteRole(guildId: String, roleId: String): DiscordRe
  * @param positions the new positions (id + position) to apply.
  * @return a [DiscordResponse] wrapping the full list of guild roles.
  */
-suspend fun DiscordClient.modifyRolePositions(guildId: String, positions: List<RolePositionPayload>): DiscordResponse<List<Role>> {
+suspend fun DiscordClient.modifyRolePositions(guildId: Snowflake, positions: List<RolePositionPayload>): DiscordResponse<List<Role>> {
     return httpClient.patch("$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.ROLES.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)

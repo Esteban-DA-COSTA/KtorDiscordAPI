@@ -4,11 +4,12 @@ import ktordiscord.components.AddMemberPayload
 import ktordiscord.components.DiscordError
 import ktordiscord.components.Member
 import ktordiscord.components.ModifyMemberPayload
+import ktordiscord.components.Snowflake
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-private fun DiscordClient.membersUrl(guildId: String): String =
+private fun DiscordClient.membersUrl(guildId: Snowflake): String =
     "$discordURL/${DiscordEndpoints.GUILDS.text}/$guildId/${DiscordEndpoints.MEMBERS.text}"
 
 /**
@@ -19,7 +20,7 @@ private fun DiscordClient.membersUrl(guildId: String): String =
  * @param after get members after this user id (pagination).
  * @return a [DiscordResponse] wrapping a list of members.
  */
-suspend fun DiscordClient.listGuildMembers(guildId: String, limit: Int? = null, after: String? = null): DiscordResponse<List<Member>> {
+suspend fun DiscordClient.listGuildMembers(guildId: Snowflake, limit: Int? = null, after: Snowflake? = null): DiscordResponse<List<Member>> {
     return httpClient.get(membersUrl(guildId)) {
         buildDiscordHeader(token)
         limit?.let { parameter("limit", it) }
@@ -34,7 +35,7 @@ suspend fun DiscordClient.listGuildMembers(guildId: String, limit: Int? = null, 
  * @param userId the id of the member's user.
  * @return a [DiscordResponse] wrapping the member.
  */
-suspend fun DiscordClient.getGuildMember(guildId: String, userId: String): DiscordResponse<Member> {
+suspend fun DiscordClient.getGuildMember(guildId: Snowflake, userId: Snowflake): DiscordResponse<Member> {
     return httpClient.get("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
     }.decode()
@@ -51,7 +52,7 @@ suspend fun DiscordClient.getGuildMember(guildId: String, userId: String): Disco
  * @param payload the join payload (access token and optional overrides).
  * @return a [DiscordResponse] wrapping the added member, or `null` on `204` (the user was already a member).
  */
-suspend fun DiscordClient.addGuildMember(guildId: String, userId: String, payload: AddMemberPayload): DiscordResponse<Member?> {
+suspend fun DiscordClient.addGuildMember(guildId: Snowflake, userId: Snowflake, payload: AddMemberPayload): DiscordResponse<Member?> {
     val response = httpClient.put("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -72,7 +73,7 @@ suspend fun DiscordClient.addGuildMember(guildId: String, userId: String, payloa
  * @param payload the fields to update.
  * @return a [DiscordResponse] wrapping the updated member.
  */
-suspend fun DiscordClient.modifyGuildMember(guildId: String, userId: String, payload: ModifyMemberPayload): DiscordResponse<Member> {
+suspend fun DiscordClient.modifyGuildMember(guildId: Snowflake, userId: Snowflake, payload: ModifyMemberPayload): DiscordResponse<Member> {
     return httpClient.patch("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -86,7 +87,7 @@ suspend fun DiscordClient.modifyGuildMember(guildId: String, userId: String, pay
  * @param guildId the id of the guild.
  * @param userId the id of the member's user.
  */
-suspend fun DiscordClient.removeGuildMember(guildId: String, userId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.removeGuildMember(guildId: Snowflake, userId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("${membersUrl(guildId)}/$userId") {
         buildDiscordHeader(token)
     }.decodeEmpty()

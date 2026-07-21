@@ -4,10 +4,11 @@ import ktordiscord.components.Message
 import ktordiscord.components.MessagePayload
 import ktordiscord.components.enums.InteractionCallbackTypes
 import ktordiscord.components.interactions.InteractionCallBack
+import ktordiscord.components.Snowflake
 import io.ktor.client.request.*
 import io.ktor.http.*
 
-suspend fun DiscordClient.createInteractionResponse(interactionId: String, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: MessagePayload? = null): DiscordResponse<Unit> {
+suspend fun DiscordClient.createInteractionResponse(interactionId: Snowflake, interactionToken: String, interactionCallBackType: InteractionCallbackTypes, message: MessagePayload? = null): DiscordResponse<Unit> {
     val interactionCallBack = InteractionCallBack(interactionCallBackType, message)
     return httpClient.post("$discordURL/interactions/$interactionId/$interactionToken/callback") {
         buildDiscordHeader(token)
@@ -23,7 +24,7 @@ suspend fun DiscordClient.createInteractionResponse(interactionId: String, inter
  *
  * @return a [DiscordResponse] wrapping the edited message.
  */
-suspend fun DiscordClient.editOriginalInteractionResponse(applicationId: String, interactionToken: String, message: MessagePayload): DiscordResponse<Message> {
+suspend fun DiscordClient.editOriginalInteractionResponse(applicationId: Snowflake, interactionToken: String, message: MessagePayload): DiscordResponse<Message> {
     return httpClient.patch("$discordURL/webhooks/$applicationId/$interactionToken/messages/@original") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)

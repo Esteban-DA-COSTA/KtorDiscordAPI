@@ -5,6 +5,7 @@ import ktordiscord.components.Channel
 import ktordiscord.components.Message
 import ktordiscord.components.MessagePayload
 import ktordiscord.components.ModifyChannelPayload
+import ktordiscord.components.Snowflake
 import io.ktor.client.request.*
 import io.ktor.http.*
 
@@ -16,7 +17,7 @@ import io.ktor.http.*
  * @param channelId the id of the channel.
  * @return a [DiscordResponse] wrapping the channel.
  */
-suspend fun DiscordClient.getChannel(channelId: String): DiscordResponse<Channel> {
+suspend fun DiscordClient.getChannel(channelId: Snowflake): DiscordResponse<Channel> {
     return httpClient.get("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId") {
         buildDiscordHeader(token)
     }.decode()
@@ -29,7 +30,7 @@ suspend fun DiscordClient.getChannel(channelId: String): DiscordResponse<Channel
  * @param payload the fields to update (unset fields are left unchanged).
  * @return a [DiscordResponse] wrapping the updated channel.
  */
-suspend fun DiscordClient.modifyChannel(channelId: String, payload: ModifyChannelPayload): DiscordResponse<Channel> {
+suspend fun DiscordClient.modifyChannel(channelId: Snowflake, payload: ModifyChannelPayload): DiscordResponse<Channel> {
     return httpClient.patch("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -42,7 +43,7 @@ suspend fun DiscordClient.modifyChannel(channelId: String, payload: ModifyChanne
  *
  * @param channelId the id of the channel to delete.
  */
-suspend fun DiscordClient.deleteChannel(channelId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.deleteChannel(channelId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId") {
         buildDiscordHeader(token)
     }.decodeEmpty()
@@ -59,7 +60,7 @@ suspend fun DiscordClient.deleteChannel(channelId: String): DiscordResponse<Unit
  * @param messageId the id of the message.
  * @return a [DiscordResponse] wrapping the message.
  */
-suspend fun DiscordClient.getChannelMessage(channelId: String, messageId: String): DiscordResponse<Message> {
+suspend fun DiscordClient.getChannelMessage(channelId: Snowflake, messageId: Snowflake): DiscordResponse<Message> {
     return httpClient.get("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.MESSAGES.text}/$messageId") {
         buildDiscordHeader(token)
     }.decode()
@@ -78,10 +79,10 @@ suspend fun DiscordClient.getChannelMessage(channelId: String, messageId: String
  * @return a [DiscordResponse] wrapping a list of messages.
  */
 suspend fun DiscordClient.getChannelMessages(
-    channelId: String,
-    around: String? = null,
-    before: String? = null,
-    after: String? = null,
+    channelId: Snowflake,
+    around: Snowflake? = null,
+    before: Snowflake? = null,
+    after: Snowflake? = null,
     limit: Int? = null,
 ): DiscordResponse<List<Message>> {
     return httpClient.get("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.MESSAGES.text}") {
@@ -101,7 +102,7 @@ suspend fun DiscordClient.getChannelMessages(
  * @param message the new message content.
  * @return a [DiscordResponse] wrapping the updated message.
  */
-suspend fun DiscordClient.editChannelMessage(channelId: String, messageId: String, message: MessagePayload): DiscordResponse<Message> {
+suspend fun DiscordClient.editChannelMessage(channelId: Snowflake, messageId: Snowflake, message: MessagePayload): DiscordResponse<Message> {
     return httpClient.patch("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.MESSAGES.text}/$messageId") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -115,7 +116,7 @@ suspend fun DiscordClient.editChannelMessage(channelId: String, messageId: Strin
  * @param channelId the id of the channel.
  * @param messageId the id of the message to delete.
  */
-suspend fun DiscordClient.deleteChannelMessage(channelId: String, messageId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.deleteChannelMessage(channelId: Snowflake, messageId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.MESSAGES.text}/$messageId") {
         buildDiscordHeader(token)
     }.decodeEmpty()
@@ -127,7 +128,7 @@ suspend fun DiscordClient.deleteChannelMessage(channelId: String, messageId: Str
  * @param channelId the id of the channel.
  * @param messageIds the ids of the messages to delete.
  */
-suspend fun DiscordClient.bulkDeleteMessages(channelId: String, messageIds: List<String>): DiscordResponse<Unit> {
+suspend fun DiscordClient.bulkDeleteMessages(channelId: Snowflake, messageIds: List<Snowflake>): DiscordResponse<Unit> {
     return httpClient.post("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.MESSAGES.text}/bulk-delete") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -142,7 +143,7 @@ suspend fun DiscordClient.bulkDeleteMessages(channelId: String, messageIds: List
  * @param message the message content.
  * @return a [DiscordResponse] wrapping the created message.
  */
-suspend fun DiscordClient.createChannelMessage(channelId: String, message: MessagePayload): DiscordResponse<Message> {
+suspend fun DiscordClient.createChannelMessage(channelId: Snowflake, message: MessagePayload): DiscordResponse<Message> {
     return httpClient.post("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.MESSAGES.text}") {
         buildDiscordHeader(token)
         contentType(ContentType.Application.Json)
@@ -160,7 +161,7 @@ suspend fun DiscordClient.createChannelMessage(channelId: String, message: Messa
  * @param channelId the id of the channel.
  * @return a [DiscordResponse] wrapping a list of pinned messages.
  */
-suspend fun DiscordClient.getPinnedMessages(channelId: String): DiscordResponse<List<Message>> {
+suspend fun DiscordClient.getPinnedMessages(channelId: Snowflake): DiscordResponse<List<Message>> {
     return httpClient.get("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.PINS.text}") {
         buildDiscordHeader(token)
     }.decode()
@@ -172,7 +173,7 @@ suspend fun DiscordClient.getPinnedMessages(channelId: String): DiscordResponse<
  * @param channelId the id of the channel.
  * @param messageId the id of the message to pin.
  */
-suspend fun DiscordClient.pinMessage(channelId: String, messageId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.pinMessage(channelId: Snowflake, messageId: Snowflake): DiscordResponse<Unit> {
     return httpClient.put("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.PINS.text}/$messageId") {
         buildDiscordHeader(token)
     }.decodeEmpty()
@@ -184,7 +185,7 @@ suspend fun DiscordClient.pinMessage(channelId: String, messageId: String): Disc
  * @param channelId the id of the channel.
  * @param messageId the id of the message to unpin.
  */
-suspend fun DiscordClient.unpinMessage(channelId: String, messageId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.unpinMessage(channelId: Snowflake, messageId: Snowflake): DiscordResponse<Unit> {
     return httpClient.delete("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.PINS.text}/$messageId") {
         buildDiscordHeader(token)
     }.decodeEmpty()
@@ -199,7 +200,7 @@ suspend fun DiscordClient.unpinMessage(channelId: String, messageId: String): Di
  *
  * @param channelId the id of the channel.
  */
-suspend fun DiscordClient.triggerTypingIndicator(channelId: String): DiscordResponse<Unit> {
+suspend fun DiscordClient.triggerTypingIndicator(channelId: Snowflake): DiscordResponse<Unit> {
     return httpClient.post("$discordURL/${DiscordEndpoints.CHANNELS.text}/$channelId/${DiscordEndpoints.TYPING.text}") {
         buildDiscordHeader(token)
     }.decodeEmpty()
