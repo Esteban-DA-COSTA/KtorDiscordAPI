@@ -8,4 +8,11 @@ enum class DiscordEndpoints(val text: String) {
     MESSAGES("messages"),
     COMMANDS("commands"),
     PERMISSIONS("permissions"),
+    MEMBERS("members"),
+    BANS("bans"),
+    EMOJIS("emojis"),
+    REACTIONS("reactions"),
+    PINS("pins"),
+    TYPING("typing"),
+    USERS("users"),
 }

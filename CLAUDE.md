@@ -51,8 +51,8 @@ app ──► core ──► components   (exported)
 
 ### `core/src/` (package `ktordiscord.core`)
 - `DiscordClient.kt` — point d'entrée de la lib. Configure le `HttpClient` avec **deux configs Json distinctes** : REST (`ignoreUnknownKeys`, `coerceInputValues`) et WebSocket (`explicitNulls=false`, `isLenient`, `encodeDefaults`). Expose deux `Channel` publics : `events` (`DispatchEvent`) et `interactions` (`Interaction`). `login(intents)` délègue à `DiscordWebSocketSession.connect`.
-- `httpRequests.kt` — **tous les appels REST**, écrits comme des fonctions d'extension `suspend fun DiscordClient.xxx(...): HttpResponse`.
-- `DiscordEndpoints.kt` — enum des segments d'URL (`applications`, `guilds`, `channels`…).
+- `rest/` — **tous les appels REST**, écrits comme des fonctions d'extension `suspend fun DiscordClient.xxx(...): HttpResponse`, un fichier par ressource : `ApplicationRequests`, `ApplicationCommandRequests`, `ChannelRequests`, `ReactionRequests`, `GuildRequests`, `MemberRequests`, `BanRequests`, `EmojiRequests`, `UserRequests`, `GatewayRequests`, `InteractionRequests`. (Le rate-limit 429 est géré globalement par le plugin `HttpRequestRetry` du `HttpClient`, pas fonction par fonction.)
+- `DiscordEndpoints.kt` — enum des segments d'URL (`applications`, `guilds`, `channels`, `members`, `bans`, `emojis`, `reactions`, `pins`, `typing`, `users`…).
 - `InteractionManager.kt` — cache des commandes d'application (embryonnaire).
 - `Utils.kt` — `HttpRequestBuilder.buildDiscordHeader(token)` : ajoute le header `Authorization: Bot <token>`.
 

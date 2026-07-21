@@ -22,7 +22,7 @@ Dette technique et pistes d'amélioration relevées lors de l'audit du 2026-07-1
 
 - [x] **7. Séparer payloads sortants et modèles entrants.** `Message` sert à la fois de DTO d'envoi (DSL `sendMessage { }`) et de modèle reçu (`MESSAGE_CREATE`), d'où les `var` nullables partout. Le bon pattern existe déjà avec `RolePayload` → le généraliser (payloads mutables pour l'envoi, modèles immuables `val` en réception). Inclut le `Snowflake("-1")` factice de `createGlobalApplicationCommand` → créer un `ApplicationCommandPayload` sans `id`. *Fait : `MessagePayload` (envoi) vs `Message` immuable (réception) ; `ApplicationCommandPayload` sans `id` (`Snowflake("-1")` supprimé). `Embed` + sous-objets restent mutables partagés (décision assumée).*
 
-- [ ] **8. Gestion du rate limiting REST (429).** Les appels retournent le `HttpResponse` brut sans détection ni retry. → Intercepteur Ktor minimal : lire `Retry-After`, attendre, rejouer.
+- [x] **8. Gestion du rate limiting REST (429).** Les appels retournent le `HttpResponse` brut sans détection ni retry. → Intercepteur Ktor minimal : lire `Retry-After`, attendre, rejouer. *Fait : plugin `HttpRequestRetry` configuré une fois sur le `HttpClient` (`DiscordClient.kt`), `maxRetries = 5`, retry sur `429`, délai via `Retry-After` puis `X-RateLimit-Reset-After` (cap 60 s). Toutes les requêtes REST en héritent transparemment.*
 
 ## Priorité 3 — Hygiène / cosmétique
 
@@ -50,6 +50,31 @@ Système `discordClient.on("cmd") { respond { button(...).click { } } }` : route
 - [ ] **Match par classe exacte.** Le routage matche `event::class` exactement : pas de handler « catch-all » (sur `DispatchEvent`) ni de dispatch par hiérarchie. À étendre si besoin.
 - [ ] **`reply` limité aux events porteurs d'un channel.** Fourni pour `MessageCreateEvent`/`MessageUpdateEvent` (extensions typées, `@JvmName` pour l'erasure). Les autres events accèdent au client via `event` + les fonctions REST existantes.
 - [ ] **Multi-handlers non ordonnancés.** Chaque handler d'un même type tourne dans son propre coroutine : pas de garantie d'ordre ni de « stop propagation ».
+
+## Couverture des endpoints REST (v1 élargie)
+
+Extension large de `core/src/rest/` par ressource Discord (retour `HttpResponse` brut, statu quo) :
+Channels (get/modify/delete, get/list/edit/delete message, bulk-delete, pins, typing), Reactions
+(add/delete own/delete user/list/delete all/delete all-for-emoji), Guilds (get/create channels,
+edit/delete/reorder roles), Members (list/get/add/modify/remove), Bans (list/get/create/remove),
+Emojis (list/get/create/modify/delete), Users (get @me/get user/create DM). Nouveaux payloads
+sortants (`ModifyChannelPayload`, `CreateChannelPayload`, `BulkDeleteMessagesPayload`,
+`RolePositionPayload`, `AddMemberPayload`, `ModifyMemberPayload`, `CreateBanPayload`,
+`CreateEmojiPayload`, `ModifyEmojiPayload`, `CreateDMPayload`) et modèles entrants (`Overwrite`,
+`Reaction`, `Ban`). Nouveaux fichiers `rest/{Reaction,Member,Ban,Emoji,User}Requests.kt`. Tests
+d'encodage/décodage : `RestPayloadEncodingTest`, `RestModelDecodingTest`. Dette résiduelle :
+
+- [ ] **Réponses REST non typées.** Les fonctions renvoient `HttpResponse` brut ; l'appelant fait
+  `.body<T>()`. Aucune gestion d'erreur centralisée sur les codes 4xx/5xx ni pour les réponses
+  vides (204 sur DELETE/PUT). À généraliser si on veut une API typée.
+- [ ] **Modèles entrants encore partiels.** `Channel`, `Member`, `User`, `Emoji` ont reçu des
+  défauts `= null` sur leurs champs optionnels pour que `.body<T>()` décode les payloads réels
+  (Discord omet souvent des champs). Mais ils restent incomplets côté champs couverts (threads,
+  `parent_id`, `permission_overwrites` sur `Channel` ; `premium_since`, `flags` sur `Member` ;
+  `global_name` sur `User`). À compléter au besoin.
+- [ ] **Incohérence de typage des ids.** `Snowflake` n'est utilisé que par `Channel`/`Message` ;
+  les autres modèles et tous les paramètres de fonctions REST utilisent `String`/`Long`. À
+  harmoniser si on veut un typage cohérent des ids.
 
 ## Divers (déjà noté dans CLAUDE.md, rappelé ici)
 
