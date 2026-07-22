@@ -3,6 +3,7 @@ package ktordiscord.app
 import kotlinx.coroutines.runBlocking
 import ktordiscord.components.enums.ApplicationCommandTypes
 import ktordiscord.components.enums.ButtonStyle
+import ktordiscord.components.enums.StatusTypeEnum
 import ktordiscord.core.DiscordClient
 import ktordiscord.core.InteractionKind
 import ktordiscord.core.onFailure
@@ -21,8 +22,9 @@ fun main(): Unit = runBlocking {
         when (event.message.content) {
             // Les verbes REST renvoient désormais un DiscordResponse<T> : on peut ignorer le
             // résultat, ou réagir à l'échec (statut HTTP + corps d'erreur Discord typé).
-            "ping" -> reply { content = "pong!" }
-                .onFailure { println("Échec d'envoi (${it.status}) : ${it.error?.message}") }
+            "ping" -> reply {
+                content = "pong!"
+            }.onFailure { println("Échec d'envoi (${it.status}) : ${it.error?.message}") }
 
             // Un bouton sur un message classique (hors interaction). Son custom_id stable
             // "refresh" est géré par le handler top-level enregistré plus bas.
@@ -30,10 +32,10 @@ fun main(): Unit = runBlocking {
                 content = "Menu :"
                 button("Rafraîchir", customId = "refresh") { style = ButtonStyle.SECONDARY }
             }
-            
-            "killMe" -> reply { 
+
+            "killMe" -> reply {
                 content = "Ok je meurs"
-            }.also { 
+            }.also {
                 discordClient.close()
             }
         }
@@ -50,21 +52,20 @@ fun main(): Unit = runBlocking {
                 title = "Embeded message"
                 description = "Réponse à la commande pingit"
             }
-            button("Re-ping") { style = ButtonStyle.PRIMARY }
-                .click {
+            button("Re-ping") { style = ButtonStyle.PRIMARY }.click {
                     update { content = "Re-pong ! 🏓" }
                 }
         }
     }
-    
+
     discordClient.on("killme") {
-        define { 
+        define {
             description = "Kill the bot"
             type = ApplicationCommandTypes.CHAT_INPUT
         }
         respond {
             ephemeral()
-            embed { 
+            embed {
                 title = "Are you sure ?"
                 description = "Are you sure you want to kill me ?"
             }
@@ -72,6 +73,9 @@ fun main(): Unit = runBlocking {
                 style = ButtonStyle.PRIMARY
             }.click {
                 respond { content = "Bye bye !" }
+                discordClient.updatePresence { 
+                    status = StatusTypeEnum.OFFLINE
+                }
                 discordClient.close()
             }
             button("No", "no") {
