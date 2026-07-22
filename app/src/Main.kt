@@ -1,6 +1,7 @@
 package ktordiscord.app
 
 import kotlinx.coroutines.runBlocking
+import ktordiscord.components.enums.ApplicationCommandTypes
 import ktordiscord.components.enums.ButtonStyle
 import ktordiscord.core.DiscordClient
 import ktordiscord.core.InteractionKind
@@ -53,6 +54,31 @@ fun main(): Unit = runBlocking {
                 .click {
                     update { content = "Re-pong ! 🏓" }
                 }
+        }
+    }
+    
+    discordClient.on("killme") {
+        define { 
+            description = "Kill the bot"
+            type = ApplicationCommandTypes.CHAT_INPUT
+        }
+        respond {
+            ephemeral()
+            embed { 
+                title = "Are you sure ?"
+                description = "Are you sure you want to kill me ?"
+            }
+            button("Yes", "yes") {
+                style = ButtonStyle.PRIMARY
+            }.click {
+                respond { content = "Bye bye !" }
+                discordClient.close()
+            }
+            button("No", "no") {
+                style = ButtonStyle.DANGER
+            }.click {
+                respond { content = "Ok, I won't kill myself !" }
+            }
         }
     }
 

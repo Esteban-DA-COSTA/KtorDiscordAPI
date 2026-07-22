@@ -30,7 +30,11 @@ start-page="Home.topic">
         <toc-element topic="Components.md"/>
         <toc-element topic="Interaction_responses.md"/>
     </toc-element>
-    <toc-element topic="Message_dsl.md"/>
+    <toc-element toc-title="Construire des messages">
+        <toc-element topic="Message_dsl.md"/>
+        <toc-element topic="Message_dsl_embeds.md"/>
+        <toc-element topic="Message_dsl_buttons.md"/>
+    </toc-element>
     <toc-element toc-title="Avancé">
         <toc-element topic="Adv_architecture.md"/>
         <toc-element topic="Adv_serialization.md"/>

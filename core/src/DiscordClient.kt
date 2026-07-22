@@ -222,6 +222,12 @@ class DiscordClient private constructor(
      * @param interaction The interaction object representing the Discord interaction to respond to.
      * @param init A lambda function used to configure the message to be sent as a response.
      */
+    @Deprecated(
+        "Legacy interaction-reply path. Register a handler with on(...) and reply from its scope: " +
+            "on(\"name\") { respond { } } or on(InteractionKind.Command, \"name\") { respond { } }, " +
+            "which use the ResponseScope DSL (components, ephemeral, …).",
+        level = DeprecationLevel.WARNING,
+    )
     suspend fun respondWithMessage(interaction: Interaction, init: (MessagePayload.() -> Unit)) {
         createInteractionResponse(
             interaction.id,
