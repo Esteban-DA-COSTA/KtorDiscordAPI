@@ -1,0 +1,79 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-US" data-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="robots" content="noindex"><meta name="built-on" content="2026-07-22T06:50:21.483949328"><meta name="build-number" content="5"><title>Serveurs, membres, r&ocirc;les &amp; bans | Ktor Discord API</title><script type="application/json" id="virtual-toc-data">[{"id":"le-serveur","level":0,"title":"Le serveur","anchor":"#le-serveur"},{"id":"salons-d-un-serveur","level":0,"title":"Salons d\u0027un serveur","anchor":"#salons-d-un-serveur"},{"id":"membres","level":0,"title":"Membres","anchor":"#membres"},{"id":"r-les","level":0,"title":"Rôles","anchor":"#r-les"},{"id":"bannissements","level":0,"title":"Bannissements","anchor":"#bannissements"},{"id":"r-capitulatif","level":0,"title":"Récapitulatif","anchor":"#r-capitulatif"}]</script><script type="application/json" id="topic-shortcuts"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b518/app.css" rel="stylesheet"><meta name="msapplication-TileColor" content="#000000"><link rel="apple-touch-icon" sizes="180x180" href="https://jetbrains.com/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="https://jetbrains.com/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://jetbrains.com/favicon-16x16.png"><meta name="msapplication-TileImage" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-144x144.png"><meta name="msapplication-square70x70logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-70x70.png"><meta name="msapplication-square150x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-150x150.png"><meta name="msapplication-wide310x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x150.png"><meta name="msapplication-square310x310logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x310.png"><meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="Serveurs, membres, r&ocirc;les &amp; bans | Ktor Discord API"><meta property="og:description" content=""><meta property="og:image" content=""><meta property="og:site_name" content="Ktor Discord API Help"><meta property="og:type" content="website"><meta property="og:locale" content="en_US"><meta property="og:url" content="writerside-documentation/rest-guilds.html"><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="Serveurs, membres, r&ocirc;les &amp; bans | Ktor Discord API"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "@id": "writerside-documentation/rest-guilds.html#webpage",
+    "url": "writerside-documentation/rest-guilds.html",
+    "name": "Serveurs, membres, r&ocirc;les &amp; bans | Ktor Discord API",
+    "description": "",
+    "image": "",
+    "inLanguage":"en-US"
+}</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json">{
+    "@type": "WebSite",
+    "@id": "writerside-documentation/#website",
+    "url": "writerside-documentation/",
+    "name": "Ktor Discord API Help"
+}</script><!-- End Schema.org --></head><body data-id="Rest_guilds" data-main-title="Serveurs, membres, rôles &amp; bans" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}" data-template="article" data-breadcrumbs="Interagir avec Discord"><div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>Ktor Discord API  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="Rest_guilds" id="Rest_guilds.md">Serveurs, membres, rôles &amp; bans</h1><p id="lwmjk4_3">Les op&eacute;rations li&eacute;es &agrave; un serveur (&laquo; guild &raquo;) : lire le serveur, g&eacute;rer ses membres, ses r&ocirc;les, ses salons et ses bannissements.</p><section class="chapter"><h2 id="le-serveur" data-toc="le-serveur">Le serveur</h2><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.snowflake
+
+val guildId = &quot;987654321098765432&quot;.snowflake
+
+val guild = kda.getGuild(guildId).getOrNull()
+println(&quot;Serveur : ${guild?.name}&quot;)
+</div></section><section class="chapter"><h2 id="salons-d-un-serveur" data-toc="salons-d-un-serveur">Salons d'un serveur</h2><p id="lwmjk4_11"><code class="code" id="lwmjk4_13">getGuildChannels</code> liste les salons ; <code class="code" id="lwmjk4_14">createGuildChannel</code> en cr&eacute;e un.</p><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.CreateChannelPayload
+import ktordiscord.components.enums.ChannelTypes
+import ktordiscord.components.snowflake
+
+val guildId = &quot;987654321098765432&quot;.snowflake
+
+val channels = kda.getGuildChannels(guildId).getOrNull()
+
+kda.createGuildChannel(guildId, CreateChannelPayload(
+    name = &quot;annonces&quot;,
+    type = ChannelTypes.GUILD_TEXT,
+))
+</div></section><section class="chapter"><h2 id="membres" data-toc="membres">Membres</h2><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.ModifyMemberPayload
+import ktordiscord.components.snowflake
+
+val guildId = &quot;987654321098765432&quot;.snowflake
+val userId = &quot;555666777888999000&quot;.snowflake
+
+// Lire un membre
+val member = kda.getGuildMember(guildId, userId).getOrNull()
+
+// Renommer + assigner des rôles
+kda.modifyGuildMember(guildId, userId, ModifyMemberPayload(
+    nick = &quot;Nouveau pseudo&quot;,
+    roles = listOf(&quot;111111111111111111&quot;.snowflake),
+))
+
+// Expulser (kick)
+kda.removeGuildMember(guildId, userId)
+</div><p id="lwmjk4_16"><code class="code" id="lwmjk4_18">modifyGuildMember</code> change le pseudo, les r&ocirc;les, l'&eacute;tat muet/sourd, le timeout&hellip; <code class="code" id="lwmjk4_19">removeGuildMember</code> expulse (kick) un membre.</p><aside class="prompt" data-type="tip" data-title="" id="lwmjk4_17"><p id="lwmjk4_20">Pour r&eacute;cup&eacute;rer <span class="control" id="lwmjk4_21">tous</span> les membres d'un gros serveur, pr&eacute;f&egrave;re la requ&ecirc;te Gateway <code class="code" id="lwmjk4_22">requestGuildMembers</code> (OP 8) plut&ocirc;t que de paginer <code class="code" id="lwmjk4_23">listGuildMembers</code>. Elle n&eacute;cessite l'intent <code class="code" id="lwmjk4_24">GUILD_MEMBERS</code>.</p></aside></section><section class="chapter"><h2 id="r-les" data-toc="r-les">R&ocirc;les</h2><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.RolePayload
+import ktordiscord.components.snowflake
+
+val guildId = &quot;987654321098765432&quot;.snowflake
+
+// Créer un rôle
+val role = kda.createNewRole(guildId, RolePayload(
+    name = &quot;Modérateur&quot;,
+    hoist = true,        // affiché séparément dans la liste des membres
+    mentionable = true,
+)).getOrNull()
+
+// Modifier / supprimer
+role?.let {
+    kda.editRole(guildId, it.id, RolePayload(name = &quot;Modérateur+&quot;))
+    kda.deleteRole(guildId, it.id)
+}
+</div><p id="lwmjk4_26"><code class="code" id="lwmjk4_27">modifyRolePositions</code> r&eacute;ordonne plusieurs r&ocirc;les en une requ&ecirc;te (la hi&eacute;rarchie des r&ocirc;les).</p></section><section class="chapter"><h2 id="bannissements" data-toc="bannissements">Bannissements</h2><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.CreateBanPayload
+import ktordiscord.components.snowflake
+
+val guildId = &quot;987654321098765432&quot;.snowflake
+val userId = &quot;555666777888999000&quot;.snowflake
+
+// Bannir + supprimer les messages des dernières 24 h
+kda.createGuildBan(guildId, userId, CreateBanPayload(deleteMessageSeconds = 24 * 3600))
+
+// Lever le ban
+kda.removeGuildBan(guildId, userId)
+</div><p id="lwmjk4_29"><code class="code" id="lwmjk4_30">createGuildBan</code> accepte un <code class="code" id="lwmjk4_31">CreateBanPayload</code> optionnel (par ex. supprimer les messages r&eacute;cents du banni). <code class="code" id="lwmjk4_32">removeGuildBan</code> l&egrave;ve le ban.</p></section><section class="chapter"><h2 id="r-capitulatif" data-toc="r-capitulatif">R&eacute;capitulatif</h2><div class="table-wrapper"><table class="wide" id="lwmjk4_33"><thead><tr class="ijRowHead" id="lwmjk4_34"><th id="lwmjk4_40"><p>Domaine</p></th><th id="lwmjk4_41"><p>Fonctions</p></th></tr></thead><tbody><tr id="lwmjk4_35"><td id="lwmjk4_42"><p>Serveur</p></td><td id="lwmjk4_43"><p><code class="code" id="lwmjk4_44">getGuild</code></p></td></tr><tr id="lwmjk4_36"><td id="lwmjk4_45"><p>Salons</p></td><td id="lwmjk4_46"><p><code class="code" id="lwmjk4_47">getGuildChannels</code>, <code class="code" id="lwmjk4_48">createGuildChannel</code></p></td></tr><tr id="lwmjk4_37"><td id="lwmjk4_49"><p>Membres</p></td><td id="lwmjk4_50"><p><code class="code" id="lwmjk4_51">listGuildMembers</code>, <code class="code" id="lwmjk4_52">getGuildMember</code>, <code class="code" id="lwmjk4_53">addGuildMember</code>, <code class="code" id="lwmjk4_54">modifyGuildMember</code>, <code class="code" id="lwmjk4_55">removeGuildMember</code></p></td></tr><tr id="lwmjk4_38"><td id="lwmjk4_56"><p>R&ocirc;les</p></td><td id="lwmjk4_57"><p><code class="code" id="lwmjk4_58">getRoles</code>, <code class="code" id="lwmjk4_59">createNewRole</code>, <code class="code" id="lwmjk4_60">editRole</code>, <code class="code" id="lwmjk4_61">modifyRolePositions</code>, <code class="code" id="lwmjk4_62">deleteRole</code></p></td></tr><tr id="lwmjk4_39"><td id="lwmjk4_63"><p>Bans</p></td><td id="lwmjk4_64"><p><code class="code" id="lwmjk4_65">getGuildBans</code>, <code class="code" id="lwmjk4_66">getGuildBan</code>, <code class="code" id="lwmjk4_67">createGuildBan</code>, <code class="code" id="lwmjk4_68">removeGuildBan</code></p></td></tr></tbody></table></div></section><div class="last-modified">Last modified: 22 July 2026</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom"><a href="rest-channels.html" class="navigation-links__prev">Salons</a><a href="rest-reactions.html" class="navigation-links__next">R&eacute;actions &amp; &eacute;mojis</a></div></article><div id="disqus_thread"></div></div></section></main></div><script src="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b518/app.js"></script></body></html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-US" data-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="robots" content="noindex"><meta name="built-on" content="2026-07-22T06:50:21.359672451"><meta name="build-number" content="5"><title>Boutons | Ktor Discord API</title><script type="application/json" id="virtual-toc-data">[{"id":"ajouter-un-bouton","level":0,"title":"Ajouter un bouton","anchor":"#ajouter-un-bouton"},{"id":"styles","level":0,"title":"Styles","anchor":"#styles"},{"id":"emoji-et-tat-d-sactiv","level":0,"title":"Emoji et état désactivé","anchor":"#emoji-et-tat-d-sactiv"},{"id":"action-rows","level":0,"title":"Action rows","anchor":"#action-rows"},{"id":"r-agir-au-clic","level":0,"title":"Réagir au clic","anchor":"#r-agir-au-clic"},{"id":"la-suite","level":0,"title":"La suite","anchor":"#la-suite"}]</script><script type="application/json" id="topic-shortcuts"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b518/app.css" rel="stylesheet"><meta name="msapplication-TileColor" content="#000000"><link rel="apple-touch-icon" sizes="180x180" href="https://jetbrains.com/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="https://jetbrains.com/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://jetbrains.com/favicon-16x16.png"><meta name="msapplication-TileImage" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-144x144.png"><meta name="msapplication-square70x70logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-70x70.png"><meta name="msapplication-square150x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-150x150.png"><meta name="msapplication-wide310x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x150.png"><meta name="msapplication-square310x310logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x310.png"><meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="Boutons | Ktor Discord API"><meta property="og:description" content=""><meta property="og:image" content=""><meta property="og:site_name" content="Ktor Discord API Help"><meta property="og:type" content="website"><meta property="og:locale" content="en_US"><meta property="og:url" content="writerside-documentation/message-dsl-buttons.html"><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="Boutons | Ktor Discord API"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "@id": "writerside-documentation/message-dsl-buttons.html#webpage",
+    "url": "writerside-documentation/message-dsl-buttons.html",
+    "name": "Boutons | Ktor Discord API",
+    "description": "",
+    "image": "",
+    "inLanguage":"en-US"
+}</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json">{
+    "@type": "WebSite",
+    "@id": "writerside-documentation/#website",
+    "url": "writerside-documentation/",
+    "name": "Ktor Discord API Help"
+}</script><!-- End Schema.org --></head><body data-id="Message_dsl_buttons" data-main-title="Boutons" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}" data-template="article" data-breadcrumbs="Construire des messages"><div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>Ktor Discord API  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="Message_dsl_buttons" id="Message_dsl_buttons.md">Boutons</h1><p id="-hsk9aw_3">Un <span class="control" id="-hsk9aw_11">bouton</span> est un composant cliquable attach&eacute; &agrave; un message. Tu l'ajoutes avec <code class="code" id="-hsk9aw_12">button(...)</code> dans n'importe quel <a href="message-dsl.html" id="-hsk9aw_13" data-tooltip="Partout où KDA produit un message — que tu l'envoies toi-même, que tu répondes à un événement ou à une interaction — tu passes le même DSL de construction. Apprends-le une fois, réutilise-le partout.">bloc de construction de message</a>. Ce topic couvre la <span class="control" id="-hsk9aw_14">construction</span> du bouton ; le <span class="control" id="-hsk9aw_15">routage du clic</span> est d&eacute;taill&eacute; dans <a href="components.html" id="-hsk9aw_16" data-tooltip="Les composants sont les éléments interactifs attachés à un message (pour l'instant : les boutons). La bibliothèque offre deux façons de router un clic, selon que le bouton est jetable ou persistant.">Composants &amp; boutons</a>.</p><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.snowflake
+
+val channelId = &quot;123456789012345678&quot;.snowflake
+
+kda.sendMessage(channelId) {
+    content = &quot;Choisis :&quot;
+    button(&quot;Valider&quot;) { style = ButtonStyle.SUCCESS }
+    button(&quot;Annuler&quot;) { style = ButtonStyle.DANGER }
+    button(&quot;Docs&quot;) {
+        style = ButtonStyle.LINK
+        url = &quot;https://example.com/docs&quot;
+    }
+}
+</div><section class="chapter"><h2 id="ajouter-un-bouton" data-toc="ajouter-un-bouton">Ajouter un bouton</h2><div class="code-block" data-lang="none">
+fun button(
+    label: String? = null,
+    customId: String? = null,
+    init: (Button.() -&gt; Unit)? = null,
+): ButtonHandle
+</div><p id="-hsk9aw_18">Tous les param&egrave;tres sont optionnels. La fonction renvoie un <code class="code" id="-hsk9aw_20">ButtonHandle</code> sur lequel tu peux encha&icirc;ner <code class="code" id="-hsk9aw_21">.click { }</code> (voir <span id="-hsk9aw_22">R&eacute;agir au clic</span>). Dans le bloc <code class="code" id="-hsk9aw_23">init</code>, tu r&egrave;gles les propri&eacute;t&eacute;s du bouton :</p><div class="table-wrapper"><table class="wide" id="-hsk9aw_19"><thead><tr class="ijRowHead" id="-hsk9aw_24"><th id="-hsk9aw_31"><p>Propri&eacute;t&eacute;</p></th><th id="-hsk9aw_32"><p>Type</p></th><th id="-hsk9aw_33"><p>D&eacute;faut</p></th><th id="-hsk9aw_34"><p>R&ocirc;le</p></th></tr></thead><tbody><tr id="-hsk9aw_25"><td id="-hsk9aw_35"><p><code class="code" id="-hsk9aw_39">style</code></p></td><td id="-hsk9aw_36"><p><code class="code" id="-hsk9aw_40">ButtonStyle</code></p></td><td id="-hsk9aw_37"><p><code class="code" id="-hsk9aw_41">PRIMARY</code></p></td><td id="-hsk9aw_38"><p>apparence / comportement</p></td></tr><tr id="-hsk9aw_26"><td id="-hsk9aw_42"><p><code class="code" id="-hsk9aw_46">label</code></p></td><td id="-hsk9aw_43"><p><code class="code" id="-hsk9aw_47">String?</code></p></td><td id="-hsk9aw_44"><p><code class="code" id="-hsk9aw_48">null</code></p></td><td id="-hsk9aw_45"><p>texte affich&eacute; (souvent pass&eacute; en 1<sup class="superscript" id="-hsk9aw_49">er</sup> argument)</p></td></tr><tr id="-hsk9aw_27"><td id="-hsk9aw_50"><p><code class="code" id="-hsk9aw_54">customId</code></p></td><td id="-hsk9aw_51"><p><code class="code" id="-hsk9aw_55">String?</code></p></td><td id="-hsk9aw_52"><p><code class="code" id="-hsk9aw_56">null</code></p></td><td id="-hsk9aw_53"><p>identifiant de routage du clic (&le; 100 car.)</p></td></tr><tr id="-hsk9aw_28"><td id="-hsk9aw_57"><p><code class="code" id="-hsk9aw_61">url</code></p></td><td id="-hsk9aw_58"><p><code class="code" id="-hsk9aw_62">String?</code></p></td><td id="-hsk9aw_59"><p><code class="code" id="-hsk9aw_63">null</code></p></td><td id="-hsk9aw_60"><p>cible d'un bouton <code class="code" id="-hsk9aw_64">LINK</code></p></td></tr><tr id="-hsk9aw_29"><td id="-hsk9aw_65"><p><code class="code" id="-hsk9aw_69">emoji</code></p></td><td id="-hsk9aw_66"><p><code class="code" id="-hsk9aw_70">Emoji?</code></p></td><td id="-hsk9aw_67"><p><code class="code" id="-hsk9aw_71">null</code></p></td><td id="-hsk9aw_68"><p>emoji affich&eacute; sur le bouton</p></td></tr><tr id="-hsk9aw_30"><td id="-hsk9aw_72"><p><code class="code" id="-hsk9aw_76">disabled</code></p></td><td id="-hsk9aw_73"><p><code class="code" id="-hsk9aw_77">Boolean?</code></p></td><td id="-hsk9aw_74"><p><code class="code" id="-hsk9aw_78">null</code></p></td><td id="-hsk9aw_75"><p>grise le bouton (non cliquable)</p></td></tr></tbody></table></div></section><section class="chapter"><h2 id="styles" data-toc="styles">Styles</h2><div class="table-wrapper"><table class="wide" id="-hsk9aw_79"><thead><tr class="ijRowHead" id="-hsk9aw_81"><th id="-hsk9aw_87"><p>Style</p></th><th id="-hsk9aw_88"><p>Rendu</p></th></tr></thead><tbody><tr id="-hsk9aw_82"><td id="-hsk9aw_89"><p><code class="code" id="-hsk9aw_91">PRIMARY</code></p></td><td id="-hsk9aw_90"><p>Bleu (action principale)</p></td></tr><tr id="-hsk9aw_83"><td id="-hsk9aw_92"><p><code class="code" id="-hsk9aw_94">SECONDARY</code></p></td><td id="-hsk9aw_93"><p>Gris</p></td></tr><tr id="-hsk9aw_84"><td id="-hsk9aw_95"><p><code class="code" id="-hsk9aw_97">SUCCESS</code></p></td><td id="-hsk9aw_96"><p>Vert</p></td></tr><tr id="-hsk9aw_85"><td id="-hsk9aw_98"><p><code class="code" id="-hsk9aw_100">DANGER</code></p></td><td id="-hsk9aw_99"><p>Rouge</p></td></tr><tr id="-hsk9aw_86"><td id="-hsk9aw_101"><p><code class="code" id="-hsk9aw_103">LINK</code></p></td><td id="-hsk9aw_102"><p>Bouton-lien (ouvre une <code class="code" id="-hsk9aw_104">url</code>, pas de clic rout&eacute;)</p></td></tr></tbody></table></div><aside class="prompt" data-type="note" data-title="" id="-hsk9aw_80"><p id="-hsk9aw_105">Un bouton non-<code class="code" id="-hsk9aw_106">LINK</code> a besoin d'un <code class="code" id="-hsk9aw_107">custom_id</code>; un bouton <code class="code" id="-hsk9aw_108">LINK</code> a besoin d'une <code class="code" id="-hsk9aw_109">url</code> &agrave; la place (et ne re&ccedil;oit jamais de callback de clic).</p></aside></section><section class="chapter"><h2 id="emoji-et-tat-d-sactiv" data-toc="emoji-et-tat-d-sactiv">Emoji et &eacute;tat d&eacute;sactiv&eacute;</h2><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.Emoji
+import ktordiscord.components.snowflake
+
+val channelId = &quot;123456789012345678&quot;.snowflake
+
+kda.sendMessage(channelId) {
+    content = &quot;Réagis :&quot;
+
+    // Emoji unicode : un simple name suffit.
+    button(&quot;J'aime&quot;) {
+        style = ButtonStyle.PRIMARY
+        emoji = Emoji(name = &quot;👍&quot;)
+    }
+
+    // Emoji custom de serveur : id + name (+ animated pour un emoji animé).
+    button(&quot;Star&quot;) {
+        style = ButtonStyle.SECONDARY
+        emoji = Emoji(id = &quot;123456789012345678&quot;.snowflake, name = &quot;star&quot;)
+    }
+
+    // Bouton grisé, non cliquable.
+    button(&quot;Indisponible&quot;) {
+        style = ButtonStyle.SECONDARY
+        disabled = true
+    }
+}
+</div><p id="-hsk9aw_111">L' <code class="code" id="-hsk9aw_112">emoji</code> est un objet <code class="code" id="-hsk9aw_113">Emoji</code>: <code class="code" id="-hsk9aw_114">Emoji(name = &quot;👍&quot;)</code> pour un emoji unicode, ou <code class="code" id="-hsk9aw_115">Emoji(id = ..., name = ..., animated = true)</code> pour un emoji custom de serveur.</p></section><section class="chapter"><h2 id="action-rows" data-toc="action-rows">Action rows</h2><p id="-hsk9aw_116">Les boutons sont rang&eacute;s automatiquement en <span class="emphasis" id="-hsk9aw_117">action rows</span>: chaque ligne accepte <span class="control" id="-hsk9aw_118">5 boutons max</span>, et KDA ouvre une nouvelle ligne au-del&agrave;. Tu n'as pas &agrave; instancier les <code class="code" id="-hsk9aw_119">ActionRow</code> toi-m&ecirc;me.</p></section><section class="chapter"><h2 id="r-agir-au-clic" data-toc="r-agir-au-clic">R&eacute;agir au clic</h2><p id="-hsk9aw_120">Deux fa&ccedil;ons de router un clic &mdash; d&eacute;taill&eacute;es dans <a href="components.html" id="-hsk9aw_127" data-tooltip="Les composants sont les éléments interactifs attachés à un message (pour l'instant : les boutons). La bibliothèque offre deux façons de router un clic, selon que le bouton est jetable ou persistant.">Composants &amp; boutons</a>:</p><p id="-hsk9aw_121"><span class="control" id="-hsk9aw_128">&Eacute;ph&eacute;m&egrave;re</span> &mdash; <code class="code" id="-hsk9aw_129">.click { }</code> g&eacute;n&egrave;re un <code class="code" id="-hsk9aw_130">custom_id</code> et stocke le callback dans un cache born&eacute; (LRU + TTL). Simple, mais <span class="control" id="-hsk9aw_131">perdu au red&eacute;marrage</span> et &eacute;ventuellement &eacute;vinc&eacute; : &agrave; r&eacute;server au court terme.</p><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">kda.on(&quot;pingit&quot;) {
+    respond {
+        content = &quot;Pong ! Encore ?&quot;
+
+        button(&quot;Re-ping&quot;) { style = ButtonStyle.PRIMARY }
+            .click {
+                // Callback exécuté au clic sur le bouton.
+                update { content = &quot;Re-pong ! 🏓&quot; }
+            }
+    }
+}
+</div><p id="-hsk9aw_123"><span class="control" id="-hsk9aw_132">Persistant</span> &mdash; donne un <code class="code" id="-hsk9aw_133">custom_id</code> stable et enregistre le handler au niveau du client avec <code class="code" id="-hsk9aw_134">on(InteractionKind.Component, &quot;prefix&quot;)</code>. Survit au red&eacute;marrage ; l'&eacute;tat encod&eacute; apr&egrave;s le <code class="code" id="-hsk9aw_135">:</code> se lit via <code class="code" id="-hsk9aw_136">arg</code>.</p><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.snowflake
+import ktordiscord.core.InteractionKind
+
+val channelId = &quot;123456789012345678&quot;.snowflake
+
+// Un bouton sur un message classique (hors interaction), avec un custom_id stable.
+kda.sendMessage(channelId) {
+    content = &quot;Menu :&quot;
+    button(&quot;Rafraîchir&quot;, customId = &quot;refresh&quot;) { style = ButtonStyle.SECONDARY }
+}
+
+// Le handler du composant, enregistré au niveau du client — aucune commande autour.
+kda.on(InteractionKind.Component, &quot;refresh&quot;) {
+    update { content = &quot;Rafraîchi ! 🔄&quot; }
+}
+</div><aside class="prompt" data-type="warning" data-title="" id="-hsk9aw_125"><p id="-hsk9aw_137">Le <code class="code" id="-hsk9aw_138">custom_id</code> d'un bouton est limit&eacute; &agrave; <span class="control" id="-hsk9aw_139">100 caract&egrave;res</span>; <code class="code" id="-hsk9aw_140">button()</code> v&eacute;rifie la contrainte et l&egrave;ve une <code class="code" id="-hsk9aw_141">IllegalArgumentException</code> au-del&agrave;.</p></aside><aside class="prompt" data-type="note" data-title="" id="-hsk9aw_126"><p id="-hsk9aw_142"><code class="code" id="-hsk9aw_143">.click { }</code> sur un bouton <code class="code" id="-hsk9aw_144">LINK</code> n'a aucun effet (un bouton-lien n'&eacute;met pas d'interaction) : l'appel est ignor&eacute; avec un warning dans les logs.</p></aside></section><section class="chapter"><h2 id="la-suite" data-toc="la-suite">La suite</h2><div class="table-wrapper"><table class="wide" id="-hsk9aw_145"><thead><tr class="ijRowHead" id="-hsk9aw_146"><th id="-hsk9aw_150"><p>Objectif</p></th><th id="-hsk9aw_151"><p>Topic</p></th></tr></thead><tbody><tr id="-hsk9aw_147"><td id="-hsk9aw_152"><p>Router les clics, boutons persistants, <code class="code" id="-hsk9aw_154">arg</code></p></td><td id="-hsk9aw_153"><p><a href="components.html" id="-hsk9aw_155" data-tooltip="Les composants sont les éléments interactifs attachés à un message (pour l'instant : les boutons). La bibliothèque offre deux façons de router un clic, selon que le bouton est jetable ou persistant.">Composants &amp; boutons</a></p></td></tr><tr id="-hsk9aw_148"><td id="-hsk9aw_156"><p>Titre, champs, images, couleur&hellip;</p></td><td id="-hsk9aw_157"><p><a href="message-dsl-embeds.html" id="-hsk9aw_158" data-tooltip="Un embed est un encart riche (titre, description, champs, images, couleur) attaché à un message. Tu en ajoutes un avec embed { } dans n'importe quel bloc de construction de message ; répète l'appel pour empiler plusieurs embeds.">Embeds</a></p></td></tr><tr id="-hsk9aw_149"><td id="-hsk9aw_159"><p>Texte, options, r&eacute;ponses &eacute;ph&eacute;m&egrave;res</p></td><td id="-hsk9aw_160"><p><a href="message-dsl.html" id="-hsk9aw_161" data-tooltip="Partout où KDA produit un message — que tu l'envoies toi-même, que tu répondes à un événement ou à une interaction — tu passes le même DSL de construction. Apprends-le une fois, réutilise-le partout.">Le DSL de message</a></p></td></tr></tbody></table></div></section><div class="last-modified">Last modified: 22 July 2026</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom"><a href="message-dsl-embeds.html" class="navigation-links__prev">Embeds</a><a href="adv-architecture.html" class="navigation-links__next">Architecture</a></div></article><div id="disqus_thread"></div></div></section></main></div><script src="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b518/app.js"></script></body></html>

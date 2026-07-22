@@ -1,0 +1,40 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-US" data-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="robots" content="noindex"><meta name="built-on" content="2026-07-22T06:50:21.417673203"><meta name="build-number" content="5"><title>Salons | Ktor Discord API</title><script type="application/json" id="virtual-toc-data">[{"id":"lire-un-salon","level":0,"title":"Lire un salon","anchor":"#lire-un-salon"},{"id":"modifier-supprimer","level":0,"title":"Modifier / supprimer","anchor":"#modifier-supprimer"},{"id":"indicateur-crit","level":0,"title":"Indicateur « écrit… »","anchor":"#indicateur-crit"},{"id":"r-capitulatif","level":0,"title":"Récapitulatif","anchor":"#r-capitulatif"}]</script><script type="application/json" id="topic-shortcuts"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b518/app.css" rel="stylesheet"><meta name="msapplication-TileColor" content="#000000"><link rel="apple-touch-icon" sizes="180x180" href="https://jetbrains.com/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="https://jetbrains.com/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://jetbrains.com/favicon-16x16.png"><meta name="msapplication-TileImage" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-144x144.png"><meta name="msapplication-square70x70logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-70x70.png"><meta name="msapplication-square150x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-150x150.png"><meta name="msapplication-wide310x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x150.png"><meta name="msapplication-square310x310logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x310.png"><meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="Salons | Ktor Discord API"><meta property="og:description" content=""><meta property="og:image" content=""><meta property="og:site_name" content="Ktor Discord API Help"><meta property="og:type" content="website"><meta property="og:locale" content="en_US"><meta property="og:url" content="writerside-documentation/rest-channels.html"><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="Salons | Ktor Discord API"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "@id": "writerside-documentation/rest-channels.html#webpage",
+    "url": "writerside-documentation/rest-channels.html",
+    "name": "Salons | Ktor Discord API",
+    "description": "",
+    "image": "",
+    "inLanguage":"en-US"
+}</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json">{
+    "@type": "WebSite",
+    "@id": "writerside-documentation/#website",
+    "url": "writerside-documentation/",
+    "name": "Ktor Discord API Help"
+}</script><!-- End Schema.org --></head><body data-id="Rest_channels" data-main-title="Salons" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}" data-template="article" data-breadcrumbs="Interagir avec Discord"><div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>Ktor Discord API  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="Rest_channels" id="Rest_channels.md">Salons</h1><p id="-dhi5nw_3">Lire, modifier et supprimer des salons, et d&eacute;clencher l'indicateur &laquo; &eacute;crit&hellip; &raquo;. La cr&eacute;ation d'un salon dans un serveur est c&ocirc;t&eacute; <a href="rest-guilds.html#salons-d-un-serveur" id="-dhi5nw_8" data-tooltip="getGuildChannels liste les salons ; createGuildChannel en crée un.">Serveurs</a>.</p><section class="chapter"><h2 id="lire-un-salon" data-toc="lire-un-salon">Lire un salon</h2><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.snowflake
+
+val channelId = &quot;123456789012345678&quot;.snowflake
+
+val channel = kda.getChannel(channelId).getOrNull()
+println(&quot;Salon : ${channel?.name}&quot;)
+</div></section><section class="chapter"><h2 id="modifier-supprimer" data-toc="modifier-supprimer">Modifier / supprimer</h2><p id="-dhi5nw_10"><code class="code" id="-dhi5nw_12">modifyChannel</code> prend un <code class="code" id="-dhi5nw_13">ModifyChannelPayload</code> (nom, sujet, position, permissions&hellip;). <code class="code" id="-dhi5nw_14">deleteChannel</code> supprime le salon (ou ferme un DM).</p><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.ModifyChannelPayload
+import ktordiscord.components.snowflake
+
+val channelId = &quot;123456789012345678&quot;.snowflake
+
+kda.modifyChannel(channelId, ModifyChannelPayload(
+    name = &quot;salon-renomme&quot;,
+    topic = &quot;Nouveau sujet du salon&quot;,
+))
+
+// Supprimer le salon (ou fermer un DM)
+kda.deleteChannel(channelId)
+</div></section><section class="chapter"><h2 id="indicateur-crit" data-toc="indicateur-crit">Indicateur &laquo; &eacute;crit&hellip; &raquo;</h2><p id="-dhi5nw_15"><code class="code" id="-dhi5nw_17">triggerTypingIndicator</code> affiche &laquo; le bot est en train d'&eacute;crire &raquo; pendant quelques secondes. Utile avant une r&eacute;ponse longue &agrave; produire.</p><div class="code-block" data-lang="kotlin" data-disable-link-processing="true">import ktordiscord.components.snowflake
+
+val channelId = &quot;123456789012345678&quot;.snowflake
+
+kda.triggerTypingIndicator(channelId)
+// … produire une réponse longue, puis l'envoyer.
+</div></section><section class="chapter"><h2 id="r-capitulatif" data-toc="r-capitulatif">R&eacute;capitulatif</h2><div class="table-wrapper"><table class="wide" id="-dhi5nw_18"><thead><tr class="ijRowHead" id="-dhi5nw_20"><th id="-dhi5nw_25"><p>Fonction</p></th><th id="-dhi5nw_26"><p>R&ocirc;le</p></th></tr></thead><tbody><tr id="-dhi5nw_21"><td id="-dhi5nw_27"><p><code class="code" id="-dhi5nw_29">getChannel(channelId)</code></p></td><td id="-dhi5nw_28"><p>Lire un salon</p></td></tr><tr id="-dhi5nw_22"><td id="-dhi5nw_30"><p><code class="code" id="-dhi5nw_32">modifyChannel(channelId, payload)</code></p></td><td id="-dhi5nw_31"><p>Modifier un salon</p></td></tr><tr id="-dhi5nw_23"><td id="-dhi5nw_33"><p><code class="code" id="-dhi5nw_35">deleteChannel(channelId)</code></p></td><td id="-dhi5nw_34"><p>Supprimer un salon / fermer un DM</p></td></tr><tr id="-dhi5nw_24"><td id="-dhi5nw_36"><p><code class="code" id="-dhi5nw_38">triggerTypingIndicator(channelId)</code></p></td><td id="-dhi5nw_37"><p>Afficher &laquo; &eacute;crit&hellip; &raquo;</p></td></tr></tbody></table></div><aside class="prompt" data-type="note" data-title="" id="-dhi5nw_19"><p id="-dhi5nw_39">Les op&eacute;rations li&eacute;es aux messages d'un salon (envoi, historique, &eacute;pingles) sont regroup&eacute;es dans <a href="rest-messages.html" id="-dhi5nw_40" data-tooltip="Envoyer, lire, modifier et supprimer des messages dans un salon. Tous ces appels renvoient un DiscordResponse&lt;T&gt;.">Messages</a>.</p></aside></section><div class="last-modified">Last modified: 22 July 2026</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom"><a href="rest-messages.html" class="navigation-links__prev">Messages</a><a href="rest-guilds.html" class="navigation-links__next">Serveurs, membres, r&ocirc;les &amp; bans</a></div></article><div id="disqus_thread"></div></div></section></main></div><script src="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b518/app.js"></script></body></html>
